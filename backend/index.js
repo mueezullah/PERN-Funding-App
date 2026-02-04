@@ -6,7 +6,6 @@ const userModel = require("./Models/User");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const signinRoute = require("./Routes/AuthRouter");
-// const signupRoute = require("./Routes/signup");
 const signupRoute = require("./Routes/AuthRouter");
 const AuthRouter = require("./Routes/AuthRouter");
 

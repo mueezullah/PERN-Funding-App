@@ -13,12 +13,24 @@ con
   .then(() => console.log("✅Connected to PostgreSQL database"))
   .catch((err) => console.error("Connection error", err.stack));
 
-con.query("SELECT * FROM datatable", (err, res) => {
-  if (!err) {
-    console.log(res.rows);
-  } else {
-    console.log(err.message);
-  }
-  con.end();
+
+const { Pool } = require("pg");
+
+const pool = new Pool({
+  host: "localhost",
+  user: "postgres",
+  port: 5000,
+  password: "12345678",
+  database: "pern_auth",
 });
-// module.exports = con;
+
+pool.on("error", (err) => {
+  console.error("Unexpected error on idle client", err);
+});
+
+pool
+  .query("SELECT NOW()")
+  .then(() => console.log("✅ Connected to PostgreSQL database"))
+  .catch((err) => console.error("Connection error", err));
+
+module.exports = pool;
