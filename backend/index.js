@@ -5,17 +5,19 @@ const db = require("./Models/db");
 const userModel = require("./Models/User");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const signinRoute = require("./Routes/AuthRouter");
+const loginRoute = require("./Routes/AuthRouter");
 const signupRoute = require("./Routes/AuthRouter");
 const AuthRouter = require("./Routes/AuthRouter");
+const adminRoute = require("./Routes/adminRoute");
 
 app.use(express.json());
 
 const PORT = process.env.PORT || 8080;
 
 // Use routes
-app.use("/signin", signinRoute);
-app.use("/signup", signupRoute);
+app.use("/auth", signupRoute);
+app.use("/auth", loginRoute);
+app.use("/admin", adminRoute);
 
 app.use(bodyParser.json());
 app.use(cors());

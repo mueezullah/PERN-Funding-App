@@ -8,5 +8,6 @@ const router = require("express").Router();
 
 router.post("/signup", signupValidation, signup);
 router.post("/login", loginValidation, login);
+// router.post("/refeshtoken", loginValidation, login);
 
 module.exports = router;

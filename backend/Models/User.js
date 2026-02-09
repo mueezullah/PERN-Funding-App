@@ -6,6 +6,7 @@ const UserSchema = {
   name: "VARCHAR(255) NOT NULL",
   email: "VARCHAR(255) UNIQUE NOT NULL",
   password: "VARCHAR(255) NOT NULL",
+  role: "VARCHAR(20) NOT NULL DEFAULT 'user'",
   created_at: "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
 };
 
@@ -17,6 +18,7 @@ const initializeTable = async () => {
       name VARCHAR(255) NOT NULL,
       email VARCHAR(255) UNIQUE NOT NULL,
       password VARCHAR(255) NOT NULL,
+      role VARCHAR(20) NOT NULL DEFAULT 'user',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `;
@@ -39,7 +41,7 @@ const User = {
   create: async (name, email, password) => {
     const query = `
       INSERT INTO users (name, email, password) 
-      VALUES ($1, $2, $3) 
+      VALUES ($1, $2, $3)
       RETURNING id, name, email, created_at;
     `;
     const values = [name, email, password];
@@ -66,7 +68,8 @@ const User = {
 
   // READ - Find user by ID
   findById: async (id) => {
-    const query = "SELECT id, name, email, created_at FROM users WHERE id = $1";
+    const query =
+      "SELECT id, name, email, created_at FROM users WHERE id = $1";
 
     try {
       const result = await pool.query(query, [id]);

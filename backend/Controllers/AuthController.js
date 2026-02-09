@@ -32,14 +32,14 @@ const login = async (req, res) => {
     const errorMessage =
       "Authentication failed, Email or password is incorrect";
     if (!user) {
-      return res.status(403).json({
+      return res.status(401).json({
         message: errorMessage,
         success: false,
       });
     }
     const isPassEqual = await bcrypt.compare(password, user.password);
     if (!isPassEqual) {
-      return res.status(403).json({
+      return res.status(401).json({
         message: errorMessage,
         success: false,
       });
