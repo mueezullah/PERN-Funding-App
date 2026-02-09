@@ -9,6 +9,7 @@ const loginRoute = require("./Routes/AuthRouter");
 const signupRoute = require("./Routes/AuthRouter");
 const AuthRouter = require("./Routes/AuthRouter");
 const adminRoute = require("./Routes/adminRoute");
+const productRouter = require("./Routes/ProductRouter");
 
 app.use(express.json());
 
@@ -18,6 +19,8 @@ const PORT = process.env.PORT || 8080;
 app.use("/auth", signupRoute);
 app.use("/auth", loginRoute);
 app.use("/admin", adminRoute);
+
+app.use("/products", productRouter);
 
 app.use(bodyParser.json());
 app.use(cors());
