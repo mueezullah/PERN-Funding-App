@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const ensureAuthenticated = require("../Middlewares/Auth.js");
 
-router.get("/abc", ensureAuthenticated, (req, res) => {
+router.get("/prods", ensureAuthenticated, (req, res) => {
   console.log("---Logged In User Detail---", req.user);
 
   res.status(200).json([
