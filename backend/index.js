@@ -34,10 +34,6 @@ userModel
     console.error("Failed to initialize database:", err);
   });
 
-app.get("/ping", (req, res) => {
-  res.send("PONG");
-});
-
 app.use("/auth", AuthRouter);
 
 app.listen(PORT, () => {
