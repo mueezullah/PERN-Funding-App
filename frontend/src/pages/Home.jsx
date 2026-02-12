@@ -4,32 +4,28 @@ import { handleError, handleSuccess } from "../utils";
 import { ToastContainer } from "react-toastify";
 
 const Home = () => {
-  const [loggedInUser, setLoggedInUser] = useState("");
+  const navigate = useNavigate();
+  const [loggedInUser] = useState(localStorage.getItem("loggediInUser"));
   const [products, setProducts] = useState("");
 
-  const navigate = useNavigate();
-
   useEffect(() => {
-    setLoggedInUser(localStorage.getItem("loggediInUser"));
-  }, []);
+    const fetchProducts = async () => {
+      try {
+        const url = "http://localhost:8080/products/prods";
+        const headers = {
+          headers: {
+            Authorization: localStorage.getItem("token"),
+          },
+        };
+        const response = await fetch(url, headers);
+        const result = await response.json();
+        console.log(result);
+        setProducts(result);
+      } catch (err) {
+        handleError(err);
+      }
+    };
 
-  const fetchProducts = async () => {
-    try {
-      const url = "http://localhost:8080/products/prods";
-      const headers = {
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
-      };
-      const response = await fetch(url, headers);
-      const result = await response.json();
-      console.log(result);
-      setProducts(result);
-    } catch (err) {
-      handleError(err);
-    }
-  };
-  useEffect(() => {
     fetchProducts();
   }, []);
 
