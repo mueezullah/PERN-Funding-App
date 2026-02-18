@@ -45,16 +45,21 @@ const login = async (req, res) => {
       });
     }
     const jwtToken = jwt.sign(
-      { _id: user._id, email: user.email },
+      { email: user.email, id: user.id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1h" },
     );
+    // Determine redirection path based on role
+    const redirectTo = user.role === "admin" ? "/adminDashboard" : "/home";
+
     res.status(200).json({
       message: "Login success",
       success: true,
       jwtToken,
       email,
       name: user.name,
+      role: user.role,
+      redirectTo, // Frontend can use this to redirect immediately
     });
   } catch (error) {
     console.error(error);
