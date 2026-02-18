@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 
+// Checks if user is logged in with a valid JWT. Auth middleware -> verify token
 const ensureAuthenticated = (req, res, next) => {
   const auth = req.headers["authorization"];
   if (!auth) {
@@ -18,6 +19,7 @@ const ensureAuthenticated = (req, res, next) => {
   }
 };
 
+// Checks if user is logged in with a valid JWT and is an admin. Admin middleware -> check role
 const ensureAdmin = (req, res, next) => {
   if (req.user && req.user.role === "admin") {
     next();
