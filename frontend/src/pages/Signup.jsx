@@ -56,46 +56,56 @@ const Signup = () => {
   };
 
   return (
-    <div className="container">
-      <h1>SignUp</h1>
-      <form onSubmit={handleSignup} action="">
-        <div>
-          <label htmlFor="name">Name</label>
-          <input
-            onChange={handleChange}
-            type="text"
-            name="name"
-            autoFocus
-            placeholder="Enter Name"
-            value={signupInfo.name}
-          />
-        </div>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input
-            onChange={handleChange}
-            type="email"
-            name="email"
-            placeholder="Enter Your Email..."
-            value={signupInfo.email}
-          />
-        </div>
-        <div>
-          <label htmlFor="password">Password</label>
-          <input
-            onChange={handleChange}
-            type="password"
-            name="password"
-            placeholder="Enter Password..."
-            value={signupInfo.password}
-          />
-        </div>
-        <button type="submit">Signup</button>
-        <span>
-          Already have an account ? <Link to="/login">Login</Link>
-        </span>
-      </form>
-      <ToastContainer></ToastContainer>
+    <div className="flex justify-center items-center h-full w-full min-h-screen">
+      <div className="bg-white p-8 px-12 rounded-xl w-full max-w-sm shadow-[8px_8px_24px_0px_rgba(66,68,90,1)] mx-auto">
+        <h1 className="text-2xl font-bold mb-5">SignUp</h1>
+        <form onSubmit={handleSignup} className="flex flex-col gap-2.5">
+          <div className="flex flex-col">
+            <label htmlFor="name" className="text-xl">Name</label>
+            <input
+              onChange={handleChange}
+              type="text"
+              name="name"
+              autoFocus
+              placeholder="Enter Name"
+              value={signupInfo.name}
+              className="w-full text-xl p-2.5 border-0 outline-none border-b border-black placeholder:text-xs placeholder:italic"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="email" className="text-xl">Email</label>
+            <input
+              onChange={handleChange}
+              type="email"
+              name="email"
+              placeholder="Enter Your Email..."
+              value={signupInfo.email}
+              className="w-full text-xl p-2.5 border-0 outline-none border-b border-black placeholder:text-xs placeholder:italic"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="password" className="text-xl">Password</label>
+            <input
+              onChange={handleChange}
+              type="password"
+              name="password"
+              placeholder="Enter Password..."
+              value={signupInfo.password}
+              className="w-full text-xl p-2.5 border-0 outline-none border-b border-black placeholder:text-xs placeholder:italic"
+            />
+          </div>
+          <button
+            type="submit"
+            className="bg-[#1877f2] border-0 text-xl text-white rounded-md py-2.5 cursor-pointer my-2.5"
+          >
+            Signup
+          </button>
+          <span>
+            Already have an account ? <Link to="/login">Login</Link>
+          </span>
+        </form>
+        <ToastContainer />
+      </div>
     </div>
   );
 };

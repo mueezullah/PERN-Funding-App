@@ -37,13 +37,14 @@ const Login = () => {
       });
 
       const result = await response.json();
-      const { success, message, jwtToken, name, error } = result;
-      localStorage.setItem("token", jwtToken);
-      localStorage.setItem("loggediInUser", name);
+      const { success, message, jwtToken, name, error, role, redirectTo } = result;
       if (success) {
         handleSuccess(message);
+        localStorage.setItem("token", jwtToken);
+        localStorage.setItem("loggedInUser", name);
+        localStorage.setItem("role", role);
         setTimeout(() => {
-          navigate("/home");
+          navigate(redirectTo);
         }, 1000);
       } else if (error) {
         handleError(error);
@@ -56,35 +57,44 @@ const Login = () => {
   };
 
   return (
-    <div className="container">
-      <h1>Login</h1>
-      <form onSubmit={handleLogin} action="">
-        <div>
-          <label htmlFor="email">Email</label>
-          <input
-            onChange={handleChange}
-            type="email"
-            name="email"
-            placeholder="Enter Your Email..."
-            value={loginInfo.email}
-          />
-        </div>
-        <div>
-          <label htmlFor="password">Password</label>
-          <input
-            onChange={handleChange}
-            type="password"
-            name="password"
-            placeholder="Enter Password..."
-            value={loginInfo.password}
-          />
-        </div>
-        <button type="submit">Login</button>
-        <span>
-          Don't have an account ? <Link to="/signup">Signup</Link>
-        </span>
-      </form>
-      <ToastContainer></ToastContainer>
+    <div className="flex justify-center items-center h-full w-full min-h-screen">
+      <div className="bg-white p-8 px-12 rounded-xl w-full max-w-sm shadow-[8px_8px_24px_0px_rgba(66,68,90,1)] mx-auto">
+        <h1 className="text-2xl font-bold mb-5">Login</h1>
+        <form onSubmit={handleLogin} className="flex flex-col gap-2.5">
+          <div className="flex flex-col">
+            <label htmlFor="email" className="text-xl">Email</label>
+            <input
+              onChange={handleChange}
+              type="email"
+              name="email"
+              placeholder="Enter Your Email..."
+              value={loginInfo.email}
+              className="w-full text-xl p-2.5 border-0 outline-none border-b border-black placeholder:text-xs placeholder:italic"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="password" className="text-xl">Password</label>
+            <input
+              onChange={handleChange}
+              type="password"
+              name="password"
+              placeholder="Enter Password..."
+              value={loginInfo.password}
+              className="w-full text-xl p-2.5 border-0 outline-none border-b border-black placeholder:text-xs placeholder:italic"
+            />
+          </div>
+          <button
+            type="submit"
+            className="bg-[#1877f2] border-0 text-xl text-white rounded-md py-2.5 cursor-pointer my-2.5"
+          >
+            Login
+          </button>
+          <span>
+            Don't have an account ? <Link to="/signup">Signup</Link>
+          </span>
+        </form>
+        <ToastContainer />
+      </div>
     </div>
   );
 };
