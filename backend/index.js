@@ -8,7 +8,6 @@ const cors = require("cors");
 const loginRoute = require("./Routes/AuthRouter");
 const signupRoute = require("./Routes/AuthRouter");
 const AuthRouter = require("./Routes/AuthRouter");
-const adminRoute = require("./Routes/adminRoute");
 
 app.use(express.json());
 app.use(bodyParser.json());
@@ -19,7 +18,6 @@ const PORT = process.env.PORT || 8080;
 // Use routes
 app.use("/auth", signupRoute);
 app.use("/auth", loginRoute);
-app.use("/admin", adminRoute);
 
 // Initialize the users table
 userModel
