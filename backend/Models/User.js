@@ -82,7 +82,7 @@ const User = {
   // READ - Get all users
   findAll: async () => {
     const query =
-      "SELECT id, name, email, created_at FROM users ORDER BY created_at DESC";
+      "SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC";
 
     try {
       const result = await pool.query(query);

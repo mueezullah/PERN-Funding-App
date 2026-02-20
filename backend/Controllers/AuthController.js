@@ -69,4 +69,20 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { signup, login };
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await UserModel.findAll();
+    res.status(200).json({
+      success: true,
+      users,
+      totalUsers: users.length,
+    });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal Server Error", success: false });
+  }
+};
+
+module.exports = { signup, login, getAllUsers };
