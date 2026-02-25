@@ -42,7 +42,7 @@ const User = {
     const query = `
       INSERT INTO users (name, email, password) 
       VALUES ($1, $2, $3)
-      RETURNING id, name, email, created_at;
+      RETURNING id, name, email, role, created_at;
     `;
     const values = [name, email, password];
 

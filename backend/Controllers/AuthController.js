@@ -13,10 +13,29 @@ const signup = async (req, res) => {
         .json({ message: "User already exists", success: false });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    await UserModel.create(name, email, hashedPassword);
-    res
-      .status(201)
-      .json({ message: "User registered successfully", success: true });
+    const newUser = await UserModel.create(name, email, hashedPassword);
+
+    // Default to 'user' role if undefined for some reason
+    const role = newUser.role || 'user';
+
+    const jwtToken = jwt.sign(
+      { email: newUser.email, id: newUser.id, role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" },
+    );
+    // Determine redirection path based on role
+    const redirectTo = role === "admin" ? "/adminDashboard" : "/home";
+
+    res.status(201).json({
+      message: "User registered successfully",
+      success: true,
+      jwtToken,
+      email: newUser.email,
+      name: newUser.name,
+      role,
+      redirectTo, // Frontend can use this to redirect immediately
+    });
+
   } catch (error) {
     console.error(error);
     return res
