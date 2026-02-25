@@ -9,7 +9,7 @@ const App = () => {
   return (
     <div className="App">
       <RefreshHandler setIsAuthenticated={setIsAuthenticated} setIsLoading={setIsLoading} />
-      <AppRoutes isAuthenticated={isAuthenticated} isLoading={isLoading} />
+      <AppRoutes isAuthenticated={isAuthenticated} setIsAuthenticated={setIsAuthenticated} isLoading={isLoading} />
     </div>
   );
 };

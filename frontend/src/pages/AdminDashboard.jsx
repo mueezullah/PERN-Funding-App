@@ -11,6 +11,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // Avatar background color based on index
 const avatarColors = [
@@ -199,7 +200,7 @@ const AccordionItem = ({
 };
 
 // --- MAIN ADMIN DASHBOARD COMPONENT ---
-const AdminDashboard = () => {
+const AdminDashboard = ({ isAutheticated }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -213,7 +214,7 @@ const AdminDashboard = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("loggedInUser");
     localStorage.removeItem("role");
-    window.location.href = "/login";
+    isAutheticated(false);
   };
 
   // Handle Role Change functionality
@@ -300,11 +301,10 @@ const AdminDashboard = () => {
                 setSidebarOpen(false);
               }}
               className={`w-full group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer
-                                ${
-                                  activeView === item.key
-                                    ? "bg-indigo-800 text-white"
-                                    : "text-indigo-300 hover:bg-indigo-700 hover:text-white"
-                                }`}
+                                ${activeView === item.key
+                  ? "bg-indigo-800 text-white"
+                  : "text-indigo-300 hover:bg-indigo-700 hover:text-white"
+                }`}
             >
               <item.icon className="mr-3 h-6 w-6" />
               {item.label}

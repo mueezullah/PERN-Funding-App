@@ -1,7 +1,7 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // kept for future use if needed
 import { handleSuccess } from "../utils";
 import { ToastContainer } from "react-toastify";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   LogOut,
   Heart,
@@ -251,10 +251,8 @@ const PostCard = ({ post }) => {
 };
 
 // --- MAIN COMPONENT: Social Feed Container ---
-const SocialFeed = () => {
+const SocialFeed = ({ setIsAuthenticated }) => {
   const [postText, setPostText] = useState("");
-
-  const navigate = useNavigate();
   const [loggedInUser] = useState(localStorage.getItem("loggedInUser"));
 
   const handleLogout = () => {
@@ -262,9 +260,7 @@ const SocialFeed = () => {
     localStorage.removeItem("loggedInUser");
     localStorage.removeItem("role");
     handleSuccess("User LoggedOut Successfully!");
-    setTimeout(() => {
-      navigate("/login");
-    }, 1000);
+    setIsAuthenticated(false);
   };
 
   return (

@@ -9,9 +9,13 @@ import Login from "../pages/Login";
 import Signup from "../pages/Signup";
 import Home from "../pages/Home";
 import AdminDashboard from "../pages/AdminDashboard";
+import Landing from "../pages/Landing";
 
-const AppRoutes = ({ isAuthenticated, isLoading }) => {
+const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
     const role = localStorage.getItem("role");
+    const token = localStorage.getItem("token");
+    const isAuthSync = isAuthenticated && !!token;
+
     const defaultTarget = role === "admin" ? "/adminDashboard" : "/home";
 
     return (
@@ -19,20 +23,20 @@ const AppRoutes = ({ isAuthenticated, isLoading }) => {
             {/* Default redirect */}
             <Route
                 path="/"
-                element={<Navigate to={isAuthenticated ? defaultTarget : "/login"} />}
+                element={isAuthSync ? <Navigate to={defaultTarget} /> : <Landing isAuthenticated={isAuthSync} />}
             />
 
             {/* Public routes — redirect to dashboard if already logged in */}
             <Route
                 path="/login"
                 element={
-                    <PublicRoute element={<Login />} isAuthenticated={isAuthenticated} isLoading={isLoading} />
+                    <PublicRoute element={<Login setIsAuthenticated={setIsAuthenticated} />} isAuthenticated={isAuthenticated} isLoading={isLoading} />
                 }
             />
             <Route
                 path="/signup"
                 element={
-                    <PublicRoute element={<Signup />} isAuthenticated={isAuthenticated} isLoading={isLoading} />
+                    <PublicRoute element={<Signup setIsAuthenticated={setIsAuthenticated} />} isAuthenticated={isAuthenticated} isLoading={isLoading} />
                 }
             />
 
@@ -40,7 +44,7 @@ const AppRoutes = ({ isAuthenticated, isLoading }) => {
             <Route
                 path="/home"
                 element={
-                    <PrivateRoute element={<Home />} isAuthenticated={isAuthenticated} isLoading={isLoading} />
+                    <PrivateRoute element={<Home setIsAuthenticated={setIsAuthenticated} />} isAuthenticated={isAuthenticated} isLoading={isLoading} />
                 }
             />
 
@@ -49,7 +53,7 @@ const AppRoutes = ({ isAuthenticated, isLoading }) => {
                 path="/adminDashboard"
                 element={
                     <RoleRoute
-                        element={<AdminDashboard />}
+                        element={<AdminDashboard setIsAuthenticated={setIsAuthenticated} />}
                         allowedRoles={["admin"]}
                         isAuthenticated={isAuthenticated}
                         isLoading={isLoading}

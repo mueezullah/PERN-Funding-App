@@ -6,7 +6,7 @@ import { Navigate } from "react-router-dom";
  */
 export const PrivateRoute = ({ element, isAuthenticated, isLoading }) => {
     if (isLoading) return null;
-    return isAuthenticated ? element : <Navigate to="/login" />;
+    return isAuthenticated ? element : <Navigate to="/" />;
 };
 
 /**
@@ -32,10 +32,10 @@ export const PublicRoute = ({ element, isAuthenticated, isLoading }) => {
  */
 export const RoleRoute = ({ element, allowedRoles, isAuthenticated, isLoading }) => {
     if (isLoading) return null;
-    if (!isAuthenticated) return <Navigate to="/login" />;
+    if (!isAuthenticated) return <Navigate to="/" />;
 
     const role = localStorage.getItem("role");
-    if (!allowedRoles.includes(role)) return <Navigate to="/home" />;
+    if (!allowedRoles.includes(role)) return <Navigate to="/" />;
 
     return element;
 };
