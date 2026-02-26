@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 // Route Guards
@@ -12,31 +12,50 @@ import AdminDashboard from "../pages/AdminDashboard";
 import Landing from "../pages/Landing";
 
 const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
-    const role = localStorage.getItem("role");
-    const token = localStorage.getItem("token");
+    // Sync auth state with localStorage
+    const [role, setRole] = useState(null);
+    const [token, setToken] = useState(null);
+
+    useEffect(() => {
+        setRole(localStorage.getItem("role"));
+        setToken(localStorage.getItem("token"));
+    }, [isAuthenticated]);
+
+    // isAuthSync ensures both state and token exist
     const isAuthSync = isAuthenticated && !!token;
 
-    const defaultTarget = role === "admin" ? "/adminDashboard" : "/home";
+    // Default redirect based on role
+    const defaultTarget = role === "admin" ? "/adminDashboard" : role === "user" ? "/home" : "/";
 
     return (
         <Routes>
             {/* Default redirect */}
             <Route
                 path="/"
-                element={isAuthSync ? <Navigate to={defaultTarget} /> : <Landing isAuthenticated={isAuthSync} />}
+                element={
+                    isAuthSync
+                        ? <Navigate to={defaultTarget} />
+                        : <Landing isAuthenticated={isAuthSync} />
+                }
             />
 
             {/* Public routes — redirect to dashboard if already logged in */}
             <Route
                 path="/login"
                 element={
-                    <PublicRoute element={<Login setIsAuthenticated={setIsAuthenticated} />} isAuthenticated={isAuthenticated} isLoading={isLoading} />
+                    <PublicRoute
+                        element={<Login setIsAuthenticated={setIsAuthenticated} />}
+                        isAuthenticated={isAuthenticated}
+                        isLoading={isLoading} />
                 }
             />
             <Route
                 path="/signup"
                 element={
-                    <PublicRoute element={<Signup setIsAuthenticated={setIsAuthenticated} />} isAuthenticated={isAuthenticated} isLoading={isLoading} />
+                    <PublicRoute
+                        element={<Signup setIsAuthenticated={setIsAuthenticated} />}
+                        isAuthenticated={isAuthenticated}
+                        isLoading={isLoading} />
                 }
             />
 
@@ -44,7 +63,10 @@ const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
             <Route
                 path="/home"
                 element={
-                    <PrivateRoute element={<Home setIsAuthenticated={setIsAuthenticated} />} isAuthenticated={isAuthenticated} isLoading={isLoading} />
+                    <PrivateRoute
+                        element={<Home setIsAuthenticated={setIsAuthenticated} />}
+                        isAuthenticated={isAuthenticated}
+                        isLoading={isLoading} />
                 }
             />
 

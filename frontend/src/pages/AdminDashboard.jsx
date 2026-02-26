@@ -11,7 +11,6 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 // Avatar background color based on index
 const avatarColors = [
@@ -200,7 +199,7 @@ const AccordionItem = ({
 };
 
 // --- MAIN ADMIN DASHBOARD COMPONENT ---
-const AdminDashboard = ({ isAutheticated }) => {
+const AdminDashboard = ({ setIsAuthenticated }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -214,7 +213,7 @@ const AdminDashboard = ({ isAutheticated }) => {
     localStorage.removeItem("token");
     localStorage.removeItem("loggedInUser");
     localStorage.removeItem("role");
-    isAutheticated(false);
+    setIsAuthenticated(false);
   };
 
   // Handle Role Change functionality

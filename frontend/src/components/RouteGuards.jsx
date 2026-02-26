@@ -5,7 +5,7 @@ import { Navigate } from "react-router-dom";
    Used for any route that requires a logged-in user.
  */
 export const PrivateRoute = ({ element, isAuthenticated, isLoading }) => {
-    if (isLoading) return null;
+    if (isLoading) return null;  // future update -> if (isLoading) return <LoadingSpinner />;
     return isAuthenticated ? element : <Navigate to="/" />;
 };
 
@@ -14,11 +14,11 @@ export const PrivateRoute = ({ element, isAuthenticated, isLoading }) => {
    to their role-appropriate dashboard.
  */
 export const PublicRoute = ({ element, isAuthenticated, isLoading }) => {
-    if (isLoading) return null;
+    if (isLoading) return null; // future update -> if (isLoading) return <LoadingSpinner />;
     if (!isAuthenticated) return element;
 
     const role = localStorage.getItem("role");
-    const target = role === "admin" ? "/adminDashboard" : "/home";
+    const target = role === "admin" ? "/adminDashboard" : role === "user" ? "/home" : "/";
     return <Navigate to={target} />;
 };
 
