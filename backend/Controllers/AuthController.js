@@ -69,7 +69,7 @@ const login = async (req, res) => {
       { expiresIn: "1h" },
     );
     // Determine redirection path based on role
-    const redirectTo = user.role === "admin" ? "/adminDashboard" : "/home";
+    const redirectTo = user.role === "admin" ? "/admin/dashboard" : user.role === "user" ? "/feed" : "/";
 
     res.status(200).json({
       message: "Login success",
