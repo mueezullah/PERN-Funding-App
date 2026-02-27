@@ -18,7 +18,7 @@ export const PublicRoute = ({ element, isAuthenticated, isLoading }) => {
     if (!isAuthenticated) return element;
 
     const role = localStorage.getItem("role");
-    const target = role === "admin" ? "/adminDashboard" : role === "user" ? "/home" : "/";
+    const target = role === "admin" ? "/admin/dashboard" : role === "user" ? "/feed" : "/";
     return <Navigate to={target} />;
 };
 

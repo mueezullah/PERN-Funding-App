@@ -5,11 +5,11 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { PrivateRoute, PublicRoute, RoleRoute } from "../components/RouteGuards";
 
 // Pages
-import Login from "../pages/Login";
-import Signup from "../pages/Signup";
-import Home from "../pages/Home";
-import AdminDashboard from "../pages/AdminDashboard";
-import Landing from "../pages/Landing";
+import Login from "../pages/Auth/Login";
+import Signup from "../pages/Auth/Signup";
+import Feed from "../pages/Feed/Feed";
+import AdminDashboard from "../pages/Admin/AdminDashboard";
+import Landing from "../pages/Home/Landing";
 
 const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
     // Sync auth state with localStorage
@@ -25,11 +25,11 @@ const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
     const isAuthSync = isAuthenticated && !!token;
 
     // Default redirect based on role
-    const defaultTarget = role === "admin" ? "/adminDashboard" : role === "user" ? "/home" : "/";
+    const defaultTarget = role === "admin" ? "/admin/dashboard" : role === "user" ? "/feed" : "/";
 
     return (
         <Routes>
-            {/* Default redirect */}
+            {/* Default redirect and Landing Page with nested auth modals */}
             <Route
                 path="/"
                 element={
@@ -37,34 +37,34 @@ const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
                         ? <Navigate to={defaultTarget} />
                         : <Landing isAuthenticated={isAuthSync} />
                 }
-            />
-
-            {/* Public routes — redirect to dashboard if already logged in */}
-            <Route
-                path="/login"
-                element={
-                    <PublicRoute
-                        element={<Login setIsAuthenticated={setIsAuthenticated} />}
-                        isAuthenticated={isAuthenticated}
-                        isLoading={isLoading} />
-                }
-            />
-            <Route
-                path="/signup"
-                element={
-                    <PublicRoute
-                        element={<Signup setIsAuthenticated={setIsAuthenticated} />}
-                        isAuthenticated={isAuthenticated}
-                        isLoading={isLoading} />
-                }
-            />
+            >
+                {/* Public routes — display as modals over the landing page */}
+                <Route
+                    path="login"
+                    element={
+                        <PublicRoute
+                            element={<Login setIsAuthenticated={setIsAuthenticated} />}
+                            isAuthenticated={isAuthenticated}
+                            isLoading={isLoading} />
+                    }
+                />
+                <Route
+                    path="signup"
+                    element={
+                        <PublicRoute
+                            element={<Signup setIsAuthenticated={setIsAuthenticated} />}
+                            isAuthenticated={isAuthenticated}
+                            isLoading={isLoading} />
+                    }
+                />
+            </Route>
 
             {/* Private routes — any authenticated user */}
             <Route
-                path="/home"
+                path="/feed"
                 element={
                     <PrivateRoute
-                        element={<Home setIsAuthenticated={setIsAuthenticated} />}
+                        element={<Feed setIsAuthenticated={setIsAuthenticated} />}
                         isAuthenticated={isAuthenticated}
                         isLoading={isLoading} />
                 }
@@ -72,7 +72,7 @@ const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
 
             {/* Role-restricted routes */}
             <Route
-                path="/adminDashboard"
+                path="/admin/dashboard"
                 element={
                     <RoleRoute
                         element={<AdminDashboard setIsAuthenticated={setIsAuthenticated} />}

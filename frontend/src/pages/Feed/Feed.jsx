@@ -1,7 +1,6 @@
-import { useNavigate } from "react-router-dom"; // kept for future use if needed
-import { handleSuccess } from "../utils";
+import { handleSuccess } from "../../utils";
 import { ToastContainer } from "react-toastify";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   LogOut,
   Heart,

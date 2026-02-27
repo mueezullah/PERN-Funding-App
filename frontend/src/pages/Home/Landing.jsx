@@ -1,11 +1,11 @@
 import React from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, Outlet } from "react-router-dom";
 import { ArrowRight, Zap, Target, Users, ShieldCheck } from "lucide-react";
 
 const Landing = ({ isAuthenticated }) => {
     // If user is already authenticated and somehow reaches here, redirect them
     const role = localStorage.getItem("role");
-    const defaultTarget = role === "admin" ? "/adminDashboard" : "/home";
+    const defaultTarget = role === "admin" ? "/admin/dashboard" : role === "user" ? "/feed" : "/";
 
     if (isAuthenticated) {
         return <Navigate to={defaultTarget} />;
@@ -151,6 +151,9 @@ const Landing = ({ isAuthenticated }) => {
                     <p>© {new Date().getFullYear()} FundME Inc. All rights reserved.</p>
                 </div>
             </footer>
+
+            {/* Render nested routes (Login/Signup modals) */}
+            <Outlet />
         </div>
     );
 };
