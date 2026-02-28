@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { handleError, handleSuccess } from "../../utils";
+import ScrollLock from "../../components/ScrollLock";
 
 const Signup = () => {
   const [signupInfo, setSignupInfo] = useState({
@@ -63,6 +64,7 @@ const Signup = () => {
       className="fixed inset-0 z-50 flex justify-center items-center bg-black/40 backdrop-blur-sm cursor-pointer"
       onClick={() => navigate("/")}
     >
+      <ScrollLock />
       <div
         className="bg-white p-8 px-12 rounded-xl w-full max-w-sm shadow-[8px_8px_24px_0px_rgba(66,68,90,1)] mx-auto relative cursor-default"
         onClick={(e) => e.stopPropagation()}
