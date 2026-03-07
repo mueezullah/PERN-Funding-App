@@ -24,7 +24,7 @@ const signup = async (req, res) => {
       { expiresIn: "1h" },
     );
     // Determine redirection path based on role
-    const redirectTo = role === "admin" ? "/adminDashboard" : "/home";
+    const redirectTo = role === "admin" ? "/admin/dashboard" : "/feed";
 
     res.status(201).json({
       message: "User registered successfully",
