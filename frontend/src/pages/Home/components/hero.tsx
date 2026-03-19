@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, TrendingUp, Users, DollarSign } from "lucide-react";
-import { ImageWithFallback } from "./images/ImageWithFallback";
+import { ImageWithFallback } from "../components/imageFallback/ImageWithFallback";
 
 export function Hero() {
   return (

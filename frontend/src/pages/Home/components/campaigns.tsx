@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Clock, Users, TrendingUp } from 'lucide-react';
-import { ImageWithFallback } from './images/ImageWithFallback';
+import { ImageWithFallback } from '../components/imageFallback/ImageWithFallback';
 
 interface Campaign {
   id: number;

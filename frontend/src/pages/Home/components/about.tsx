@@ -1,5 +1,5 @@
 import { Target, Shield, Zap, Heart } from 'lucide-react';
-import { ImageWithFallback } from './images/ImageWithFallback';
+import { ImageWithFallback } from '../components/imageFallback/ImageWithFallback';
 
 export function About() {
   const features = [

@@ -11,9 +11,9 @@ import {
 // Pages
 import Login from "../pages/Auth/Login";
 import Signup from "../pages/Auth/Signup";
-import Feed from "../pages/Feed/Feed";
+import Feed from "../pages/Feed/FeedMain";
 import AdminDashboard from "../pages/Admin/AdminDashboard";
-import Landing from "../pages/Home/LandingPage";
+import Landing from "../pages/Home/LandingMain";
 
 const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
   // Sync auth state with localStorage
