@@ -9,7 +9,8 @@ const ensureAuthenticated = (req, res, next) => {
     });
   }
   try {
-    const decoded = verifyToken(auth);
+    const token = auth.startsWith("Bearer ") ? auth.split(" ")[1] : auth;
+    const decoded = verifyToken(token);
     req.user = decoded;
     next();
   } catch (err) {
