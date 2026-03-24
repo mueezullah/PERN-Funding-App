@@ -1,15 +1,15 @@
-const jwt = require("jsonwebtoken");
+const { verifyToken } = require("../../utils/jwt");
 
-// Checks if user is logged in with a valid JWT. Auth middleware -> verify token
+// Checks if user is logged in with a valid JWT
 const ensureAuthenticated = (req, res, next) => {
   const auth = req.headers["authorization"];
   if (!auth) {
     return res.status(403).json({
-      message: "Unauthorized, JWT token is require",
+      message: "Unauthorized, JWT token is required",
     });
   }
   try {
-    const decoded = jwt.verify(auth, process.env.JWT_SECRET);
+    const decoded = verifyToken(auth);
     req.user = decoded;
     next();
   } catch (err) {
@@ -19,7 +19,7 @@ const ensureAuthenticated = (req, res, next) => {
   }
 };
 
-// Checks if user is logged in with a valid JWT and is an admin. Admin middleware -> check role
+// Checks if authenticated user has admin role
 const ensureAdmin = (req, res, next) => {
   if (req.user && req.user.role === "admin") {
     next();

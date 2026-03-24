@@ -14,6 +14,7 @@ const signupValidation = (req, res, next) => {
   }
   next();
 };
+
 const loginValidation = (req, res, next) => {
   const schema = Joi.object({
     email: Joi.string().email().required(),
@@ -27,4 +28,5 @@ const loginValidation = (req, res, next) => {
   }
   next();
 };
+
 module.exports = { signupValidation, loginValidation };

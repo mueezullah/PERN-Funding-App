@@ -1,4 +1,4 @@
-const pool = require("./db"); // Import your PostgreSQL connection
+const pool = require("../../config/db");
 
 // Define the User schema structure (for documentation/validation)
 const UserSchema = {

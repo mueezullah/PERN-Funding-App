@@ -1,9 +1,9 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "nodemon src/server.js"
   },
   "keywords": [],
   "author": "",
