@@ -1,19 +1,27 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, MessageCircle, PlusSquare, Bell, User, Menu, X, Shirt, FileText, Trophy, CircleDollarSign, Shield, ToggleLeft, LogOut, Settings as SettingsIcon } from 'lucide-react';
+import { Search, MessageCircle, PlusSquare, Bell, User, Menu, X, Shirt, FileText, Trophy, CircleDollarSign, Shield, ToggleLeft, LogOut, Settings as SettingsIcon, Edit3, Megaphone } from 'lucide-react';
 import { Sidebar } from './Sidebar';
+import { handleError } from '../../../utils';
 
 export function Navbar({ setIsAuthenticated }: { setIsAuthenticated: (value: boolean) => void }) {
 
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [isCreateDropdownOpen, setIsCreateDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const createDropdownRef = useRef<HTMLDivElement>(null);
+
+  const role = localStorage.getItem('role');
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsProfileDropdownOpen(false);
+      }
+      if (createDropdownRef.current && !createDropdownRef.current.contains(event.target as Node)) {
+        setIsCreateDropdownOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -29,6 +37,22 @@ export function Navbar({ setIsAuthenticated }: { setIsAuthenticated: (value: boo
     setIsAuthenticated(false);
     navigate("/");
   }
+
+  const handleCampaignClick = () => {
+    setIsCreateDropdownOpen(false);
+    if (role === 'fundraiser' || role === 'admin') {
+      navigate('/create-campaign');
+    } else {
+      handleError('Verify your identity to create campaigns');
+    }
+  };
+
+  const handlePostClick = () => {
+    setIsCreateDropdownOpen(false);
+    navigate('/feed');
+    // Scroll to compose area at top of feed
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const profileMenuItems = [
     { label: 'View Profile', icon: User },
@@ -73,10 +97,48 @@ export function Navbar({ setIsAuthenticated }: { setIsAuthenticated: (value: boo
           <button className="p-2 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors hidden sm:block">
             <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
           </button>
-          <button className="flex items-center space-x-1.5 font-semibold text-slate-700 hover:text-indigo-600 transition-colors px-3 py-1.5 rounded-full hover:bg-indigo-50">
-            <PlusSquare className="w-5 h-5 md:w-6 md:h-6" />
-            <span className="hidden md:inline text-sm">Create</span>
-          </button>
+
+          {/* Create Dropdown */}
+          <div className="relative" ref={createDropdownRef}>
+            <button
+              onClick={() => setIsCreateDropdownOpen(!isCreateDropdownOpen)}
+              className="flex items-center space-x-1.5 font-semibold text-slate-700 hover:text-indigo-600 transition-colors px-3 py-1.5 rounded-full hover:bg-indigo-50"
+            >
+              <PlusSquare className="w-5 h-5 md:w-6 md:h-6" />
+              <span className="hidden md:inline text-sm">Create</span>
+            </button>
+
+            {isCreateDropdownOpen && (
+              <div className="absolute top-full right-0 mt-3 w-[240px] bg-[#1a1a1b] border border-slate-700/50 rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col z-50 py-2 text-[#d7dadc]">
+                <button
+                  onClick={handlePostClick}
+                  className="flex cursor-pointer items-center px-4 py-3 hover:bg-[#272729] transition-colors w-full text-left"
+                >
+                  <Edit3 className="w-[22px] h-[22px] mr-3 text-[#d7dadc]" strokeWidth={1.5} />
+                  <div>
+                    <span className="text-[14px] font-medium block">Post / Thread</span>
+                    <span className="text-[11px] text-slate-400">Share with the community</span>
+                  </div>
+                </button>
+
+                <div className="h-px bg-[#343536] w-full" />
+
+                <button
+                  onClick={handleCampaignClick}
+                  className="flex cursor-pointer items-center px-4 py-3 hover:bg-[#272729] transition-colors w-full text-left"
+                >
+                  <Megaphone className="w-[22px] h-[22px] mr-3 text-[#d7dadc]" strokeWidth={1.5} />
+                  <div>
+                    <span className="text-[14px] font-medium block">Campaign</span>
+                    <span className="text-[11px] text-slate-400">
+                      {role === 'fundraiser' || role === 'admin' ? 'Start a fundraising campaign' : 'Requires verified account'}
+                    </span>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
+
           <button className="p-2 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors relative">
             <Bell className="w-5 h-5 md:w-6 md:h-6" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>

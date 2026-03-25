@@ -14,6 +14,7 @@ import Signup from "../pages/Auth/Signup";
 import Feed from "../pages/Feed/FeedMain";
 import AdminDashboard from "../pages/Admin/AdminDashboard";
 import Landing from "../pages/Home/LandingMain";
+import CreateCampaignModal from "../pages/CreatorDashboard/CreateCampaignModal";
 
 const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
   // Sync auth state with localStorage
@@ -33,7 +34,7 @@ const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
 
   // Default redirect based on role
   const defaultTarget =
-    role === "admin" ? "/admin/dashboard" : role === "user" ? "/feed" : "/";
+    role === "admin" ? "/admin/dashboard" : (role === "user" || role === "fundraiser") ? "/feed" : "/";
 
   return (
     <Routes>
@@ -90,6 +91,19 @@ const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
           <RoleRoute
             element={<AdminDashboard setIsAuthenticated={setIsAuthenticated} />}
             allowedRoles={["admin"]}
+            isAuthenticated={isAuthenticated}
+            isLoading={isLoading}
+          />
+        }
+      />
+
+      {/* Create Campaign — fundraiser & admin only */}
+      <Route
+        path="/create-campaign"
+        element={
+          <RoleRoute
+            element={<CreateCampaignModal />}
+            allowedRoles={["fundraiser", "admin"]}
             isAuthenticated={isAuthenticated}
             isLoading={isLoading}
           />
