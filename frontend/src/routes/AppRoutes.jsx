@@ -15,8 +15,11 @@ import Feed from "../pages/Feed/FeedMain";
 import AdminDashboard from "../pages/Admin/AdminDashboard";
 import Landing from "../pages/Home/LandingMain";
 import CreateCampaignModal from "../pages/CreatorDashboard/CreateCampaignModal";
+import { RootLayout as ProfileRootLayout } from "../pages/Profile/RootLayout";
+import { ProfileView } from "../pages/Profile/ProfileView";
 
 const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
+  
   // Sync auth state with localStorage
   const [role, setRole] = useState(null);
   const [token, setToken] = useState(null);
@@ -38,6 +41,7 @@ const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
 
   return (
     <Routes>
+      
       {/* Default redirect and Landing Page with nested auth modals */}
       <Route
         path="/"
@@ -83,6 +87,20 @@ const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
           />
         }
       />
+
+      {/* User Profiles */}
+      <Route
+        path="/user"
+        element={
+          <PrivateRoute
+            element={<ProfileRootLayout />}
+            isAuthenticated={isAuthenticated}
+            isLoading={isLoading}
+          />
+        }
+      >
+        <Route path=":username" element={<ProfileView />} />
+      </Route>
 
       {/* Role-restricted routes */}
       <Route
