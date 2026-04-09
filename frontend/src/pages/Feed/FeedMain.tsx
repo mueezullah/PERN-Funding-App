@@ -4,7 +4,7 @@ import { Sidebar } from "./components/Sidebar";
 import { Feed } from "./components/Feed";
 import { RightSidebar } from "./components/RightSidebar";
 
-export default function App({ setIsAuthenticated }: { setIsAuthenticated: (value: boolean) => void }) {
+export default function FeedMain({ setIsAuthenticated }: { setIsAuthenticated: (value: boolean) => void }) {
   return (
     <div className="h-screen bg-slate-50 flex flex-col font-sans text-slate-900 overflow-hidden">
       <Navbar setIsAuthenticated={setIsAuthenticated} />
