@@ -4,7 +4,7 @@ import { Search, MessageCircle, PlusSquare, Bell, User, Menu, X, Shirt, FileText
 import { Sidebar } from './Sidebar';
 import { handleError } from '../../../utils';
 
-export function Navbar({ setIsAuthenticated }: { setIsAuthenticated: (value: boolean) => void }) {
+export function Navbar({ setIsAuthenticated }: { setIsAuthenticated?: (value: boolean) => void }) {
 
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -34,7 +34,7 @@ export function Navbar({ setIsAuthenticated }: { setIsAuthenticated: (value: boo
     localStorage.removeItem("token");
     localStorage.removeItem("loggedInUser");
     localStorage.removeItem("role");
-    setIsAuthenticated(false);
+    if (setIsAuthenticated) setIsAuthenticated(false);
     navigate("/");
   }
 
@@ -55,7 +55,15 @@ export function Navbar({ setIsAuthenticated }: { setIsAuthenticated: (value: boo
   };
 
   const profileMenuItems = [
-    { label: 'View Profile', icon: User },
+    { 
+      label: 'View Profile', 
+      icon: User,
+      action: () => {
+        setIsProfileDropdownOpen(false);
+        const username = localStorage.getItem('loggedInUser') || 'WizardX';
+        navigate(`/user/${username}`);
+      }
+    },
     { label: 'Edit Avatar', icon: Shirt },
     { label: 'Drafts', icon: FileText },
     { label: 'Achievements', icon: Trophy },
@@ -156,6 +164,7 @@ export function Navbar({ setIsAuthenticated }: { setIsAuthenticated: (value: boo
                 {profileMenuItems.map((item) => (
                   <button
                     key={item.label}
+                    onClick={item.action}
                     className="flex cursor-pointer items-center px-4 py-3 hover:bg-[#272729] transition-colors w-full text-left"
                   >
                     <item.icon className="w-[22px] h-[22px] mr-3 text-[#d7dadc]" strokeWidth={1.5} />
