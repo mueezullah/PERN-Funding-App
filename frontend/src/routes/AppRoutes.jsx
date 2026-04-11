@@ -17,6 +17,7 @@ import Landing from "../pages/Home/LandingMain";
 import CreateCampaignModal from "../pages/CreatorDashboard/CreateCampaignModal";
 import { RootLayout as ProfileRootLayout } from "../pages/Profile/RootLayout";
 import { ProfileView } from "../pages/Profile/ProfileView";
+import KYCVerification from "../pages/KYC/KYCVerification";
 
 const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
   
@@ -122,6 +123,18 @@ const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
           <RoleRoute
             element={<CreateCampaignModal />}
             allowedRoles={["fundraiser", "admin"]}
+            isAuthenticated={isAuthenticated}
+            isLoading={isLoading}
+          />
+        }
+      />
+
+      {/* KYC Verification — for 'user' role (all auth users can access) */}
+      <Route
+        path="/kyc-verification"
+        element={
+          <PrivateRoute
+            element={<KYCVerification />}
             isAuthenticated={isAuthenticated}
             isLoading={isLoading}
           />
