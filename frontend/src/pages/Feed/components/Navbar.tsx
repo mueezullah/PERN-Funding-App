@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, MessageCircle, PlusSquare, Bell, User, Menu, X, Shirt, FileText, Trophy, CircleDollarSign, Shield, ToggleLeft, LogOut, Settings as SettingsIcon, Edit3, Megaphone } from 'lucide-react';
 import { Sidebar } from './Sidebar';
+import { CreateThreadModal } from './CreateThreadModal';
 import { handleError } from '../../../utils';
 
 export function Navbar({ setIsAuthenticated }: { setIsAuthenticated?: (value: boolean) => void }) {
@@ -10,6 +11,7 @@ export function Navbar({ setIsAuthenticated }: { setIsAuthenticated?: (value: bo
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isCreateDropdownOpen, setIsCreateDropdownOpen] = useState(false);
+  const [isThreadModalOpen, setIsThreadModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const createDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -43,15 +45,14 @@ export function Navbar({ setIsAuthenticated }: { setIsAuthenticated?: (value: bo
     if (role === 'fundraiser' || role === 'admin') {
       navigate('/create-campaign');
     } else {
-      handleError('Verify your identity to create campaigns');
+      // 'user' role must complete KYC before creating campaigns
+      navigate('/kyc-verification');
     }
   };
 
   const handlePostClick = () => {
     setIsCreateDropdownOpen(false);
-    navigate('/feed');
-    // Scroll to compose area at top of feed
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setIsThreadModalOpen(true);
   };
 
   const profileMenuItems = [
@@ -209,6 +210,12 @@ export function Navbar({ setIsAuthenticated }: { setIsAuthenticated?: (value: bo
           </div>
         </div>
       )}
+
+      {/* Thread / Post Modal — available to all roles */}
+      <CreateThreadModal
+        isOpen={isThreadModalOpen}
+        onClose={() => setIsThreadModalOpen(false)}
+      />
     </>
   );
 }

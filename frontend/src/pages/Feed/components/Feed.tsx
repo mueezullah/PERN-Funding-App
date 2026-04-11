@@ -1,16 +1,33 @@
 import React, {
   useState,
-  useEffect,
   useRef,
   useCallback,
 } from "react";
+import { useNavigate } from "react-router-dom";
 import { FeedCard } from "./FeedCard";
-import { Sparkles, Image as ImageIcon, Megaphone } from "lucide-react";
+import { CreateThreadModal } from "./CreateThreadModal";
+import { Sparkles, Edit3, Megaphone } from "lucide-react";
 import { useCampaigns } from "../../../features/creator/creatorSlice";
 
 export function Feed() {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
+  const [isThreadModalOpen, setIsThreadModalOpen] = useState(false);
   const { campaigns, pagination, loading, error } = useCampaigns(page, 10);
+
+  const role = localStorage.getItem("role");
+
+  const handleCampaignClick = () => {
+    if (role === "fundraiser" || role === "admin") {
+      navigate("/create-campaign");
+    } else {
+      navigate("/kyc-verification");
+    }
+  };
+
+  const handlePostClick = () => {
+    setIsThreadModalOpen(true);
+  };
 
   const observer = useRef<IntersectionObserver | null>(null);
   const hasMore = pagination ? (pagination as any).currentPage < (pagination as any).totalPages : true;
@@ -57,40 +74,54 @@ export function Feed() {
 
   return (
     <div className="w-full max-w-[800px] mx-auto min-h-screen py-8 pr-4 pl-4 sm:pl-4 sm:pr-4">
-      {/* Create Post Area */}
+      {/* Create Post / Thread Area */}
       <div className="bg-white rounded-3xl shadow-sm border border-slate-200/60 p-5 mb-8">
         <div className="flex items-center space-x-4 mb-4">
-          <div className="w-11 h-11 rounded-full bg-slate-100 flex-shrink-0 border border-slate-200 overflow-hidden flex items-center justify-center text-slate-400 font-bold text-sm">
+          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 flex-shrink-0 flex items-center justify-center text-white font-bold text-sm shadow-sm">
             {localStorage.getItem("loggedInUser")?.charAt(0)?.toUpperCase() || "U"}
           </div>
-          <div className="flex-1">
-            <input
-              type="text"
-              placeholder="Start a new campaign, post, or thread..."
-              className="w-full bg-transparent text-slate-900 placeholder-slate-400 font-medium focus:outline-none text-[16px]"
-            />
-          </div>
+          <button
+            onClick={handlePostClick}
+            className="flex-1 text-left text-slate-400 font-medium text-[15px] hover:text-slate-600 transition-colors"
+          >
+            What's on your mind, {localStorage.getItem("loggedInUser") || "there"}?
+          </button>
         </div>
         <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-          <div className="flex items-center space-x-2">
-            <button className="flex items-center space-x-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-full transition-colors">
-              <ImageIcon className="w-4 h-4" />
-              <span className="text-[13px] font-semibold">
-                Media
-              </span>
+          <div className="flex items-center space-x-1">
+            {/* Post / Thread button */}
+            <button
+              onClick={handlePostClick}
+              className="flex items-center space-x-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-full transition-colors"
+            >
+              <Edit3 className="w-4 h-4" />
+              <span className="text-[13px] font-semibold">Thread</span>
             </button>
-            <button className="flex items-center space-x-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-full transition-colors">
-              <Sparkles className="w-4 h-4" />
-              <span className="text-[13px] font-semibold">
-                Campaign
-              </span>
+
+            {/* Campaign button — role-aware */}
+            <button
+              onClick={handleCampaignClick}
+              className="flex items-center space-x-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-full transition-colors"
+            >
+              <Megaphone className="w-4 h-4" />
+              <span className="text-[13px] font-semibold">Campaign</span>
             </button>
           </div>
-          <button className="px-5 py-1.5 bg-slate-900 text-white text-[13px] font-bold rounded-full hover:bg-slate-800 transition-colors">
+
+          <button
+            onClick={handlePostClick}
+            className="px-5 py-1.5 bg-slate-900 text-white text-[13px] font-bold rounded-full hover:bg-slate-800 transition-colors"
+          >
             Post
           </button>
         </div>
       </div>
+
+      {/* Thread Modal */}
+      <CreateThreadModal
+        isOpen={isThreadModalOpen}
+        onClose={() => setIsThreadModalOpen(false)}
+      />
 
       {/* Error State */}
       {error && !loading && campaigns.length === 0 && (
