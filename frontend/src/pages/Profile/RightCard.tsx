@@ -16,46 +16,51 @@ export function ProfileRightSidebar({ username }: { username?: string }) {
         
         {/* Profile Info Card Content */}
         <div className="p-5 flex flex-col">
-          <h2 className="text-[20px] font-bold text-slate-900 mb-4">{displayUsername}</h2>
+          <h2 className="text-[20px] font-bold text-slate-900">{displayUsername}</h2>
           
-          <div className="flex space-x-3 mb-6">
-            <button className="flex items-center space-x-2 w-fit bg-slate-100 hover:bg-slate-200/70 text-slate-900 font-semibold text-[14px] px-4 py-1.5 rounded-full transition-colors">
-              <Share className="w-4 h-4" />
-              <span>Share</span>
-            </button>
+          <div className="flex space-x-3 mb-6 mt-4">
+            
             <button className="flex items-center space-x-2 w-fit bg-slate-100 hover:bg-slate-200/70 text-slate-900 font-semibold text-[14px] px-4 py-1.5 rounded-full transition-colors">
               <Edit className="w-4 h-4" />
               <span>Update/Edit</span>
             </button>
+            <button className="flex items-center space-x-2 w-fit bg-slate-100 hover:bg-slate-200/70 text-slate-900 font-semibold text-[14px] px-4 py-1.5 rounded-full transition-colors">
+              <Share className="w-4 h-4" />
+              <span>Share</span>
+            </button>
           </div>
           
-          <div className="mb-6">
-            <p className="text-[14px] font-bold text-slate-700">0 followers</p>
+          <div className="flex items-center space-x-4 mb-6">
+            <p className="text-[14px] font-bold text-slate-700 hover:underline cursor-pointer">0 following</p>
+            <p className="text-[14px] font-bold text-slate-700 hover:underline cursor-pointer">0 followers</p>
           </div>
           
           {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-y-6 gap-x-4 mb-6">
             <div>
               <p className="text-[16px] font-bold text-slate-900 leading-tight">0</p>
-              <p className="text-[13px] text-slate-500 font-medium">Campaigns</p>
+              <p className="text-[13px] text-slate-500 font-medium">Posts/Campaigns</p>
             </div>
             <div>
               <p className="text-[16px] font-bold text-slate-900 leading-tight">0</p>
-              <p className="text-[13px] text-slate-500 font-medium">Donations</p>
+              <p className="text-[13px] text-slate-500 font-medium">Backed Projects</p>
             </div>
             <div>
               <p className="text-[16px] font-bold text-slate-900 leading-tight">$0</p>
-              <p className="text-[13px] text-slate-500 font-medium">Total Raised</p>
+              <p className="text-[13px] text-slate-500 font-medium">Total Contributed</p>
             </div>
             <div>
-              <p className="text-[16px] font-bold text-slate-900 leading-tight">New</p>
+              <p className="text-[16px] font-bold text-slate-900 leading-tight flex items-center space-x-1">
+                <span className="text-amber-500 text-[18px]">★</span>
+                <span>Starter</span>
+              </p>
               <p className="text-[13px] text-slate-500 font-medium hover:underline cursor-pointer">Impact Level &gt;</p>
             </div>
           </div>
           
           {/* Single Stat */}
           <div className="mb-6">
-            <p className="text-[16px] font-bold text-slate-900 leading-tight">2024</p>
+            <p className="text-[16px] font-bold text-slate-900 leading-tight">2026</p>
             <p className="text-[13px] text-slate-500 font-medium">Member Since</p>
           </div>
           
