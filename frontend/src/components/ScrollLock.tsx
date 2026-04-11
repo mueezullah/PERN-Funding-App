@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, type FC } from "react";
 
-const ScrollLock = () => {
+const ScrollLock: FC = () => {
   useEffect(() => {
     document.body.style.overflow = "hidden";
 

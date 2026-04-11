@@ -1,7 +1,12 @@
-import React, { useEffect } from "react";
+import { useEffect, type FC } from "react";
 import { useLocation } from "react-router-dom";
 
-const RefreshHandler = ({ setIsAuthenticated, setIsLoading }) => {
+interface RefreshHandlerProps {
+  setIsAuthenticated: (val: boolean) => void;
+  setIsLoading: (val: boolean) => void;
+}
+
+const RefreshHandler: FC<RefreshHandlerProps> = ({ setIsAuthenticated, setIsLoading }) => {
   const location = useLocation();
 
   useEffect(() => {
