@@ -1,20 +1,23 @@
 import React, { useState, useRef, useCallback } from "react";
 import { X, Image as ImageIcon, Film, Smile, Send, Loader2, AtSign } from "lucide-react";
 
+import { useCreatePost } from "../../../features/Posts/postsSlice";
+
 interface CreateThreadModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: (newPost: any) => void;
 }
 
 const MAX_CHARS = 500;
 
-export function CreateThreadModal({ isOpen, onClose }: CreateThreadModalProps) {
+export function CreateThreadModal({ isOpen, onClose, onSuccess }: CreateThreadModalProps) {
   const [message, setMessage] = useState("");
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<"image" | "video" | null>(null);
-  const [isPosting, setIsPosting] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const { create, loading: isPosting, error } = useCreatePost();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -72,13 +75,20 @@ export function CreateThreadModal({ isOpen, onClose }: CreateThreadModalProps) {
 
   const handleSubmit = async () => {
     if (isEmpty || isOverLimit || isPosting) return;
-    setIsPosting(true);
-    // Simulate post — replace with real API call
-    await new Promise((res) => setTimeout(res, 1200));
-    setIsPosting(false);
-    setMessage("");
-    removeMedia();
-    onClose();
+    try {
+      const newPost = await create({
+        content: message,
+        mediaUrl: ""
+      });
+      setMessage("");
+      removeMedia();
+      onClose();
+      if (onSuccess) {
+        onSuccess(newPost); // Pass the created post back so Feed can prepend it instantly
+      }
+    } catch (err) {
+      console.error("Failed to create post:", err);
+    }
   };
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -127,6 +137,9 @@ export function CreateThreadModal({ isOpen, onClose }: CreateThreadModalProps) {
                 style={{ minHeight: "80px" }}
                 autoFocus
               />
+              {error && (
+                <p className="text-red-500 text-xs mt-1">{error}</p>
+              )}
             </div>
           </div>
 
