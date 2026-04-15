@@ -4,7 +4,7 @@ import { ImageWithFallback } from './ImageFallback/ImageWithFallback';
 
 interface FeedCardProps {
   id: string;
-  type?: 'campaign' | 'post';
+  type?: 'campaign' | 'post' | 'thread';
   user: {
     name: string;
     avatar: string;
