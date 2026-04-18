@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Heart, MessageSquare, Share2, MoreHorizontal, Bookmark, Clock } from 'lucide-react';
 import { ImageWithFallback } from './ImageFallback/ImageWithFallback';
+import DonationModal from '../../../components/DonationModal';
 
 interface FeedCardProps {
   id: string;
@@ -26,6 +27,8 @@ interface FeedCardProps {
 }
 
 export function FeedCard({ id, type = 'campaign', user, content, stats, deadline }: FeedCardProps) {
+  const [isDonationOpen, setIsDonationOpen] = useState(false);
+
   const isCampaign = type === 'campaign' && stats.raised !== undefined && stats.goal !== undefined;
   const progress = isCampaign ? Math.min((stats.raised! / stats.goal!) * 100, 100) : 0;
 
@@ -114,11 +117,21 @@ export function FeedCard({ id, type = 'campaign', user, content, stats, deadline
         </div>
 
         {isCampaign && (
-          <button className="px-5 py-2 sm:px-6 sm:py-2.5 bg-slate-900 text-white font-bold text-[13px] sm:text-[14px] rounded-full hover:bg-slate-800 active:scale-95 transition-all shadow-sm">
+          <button 
+            onClick={() => setIsDonationOpen(true)}
+            className="px-5 py-2 sm:px-6 sm:py-2.5 bg-slate-900 text-white font-bold text-[13px] sm:text-[14px] rounded-full hover:bg-slate-800 active:scale-95 transition-all shadow-sm"
+          >
             Donate Now
           </button>
         )}
       </div>
+
+      <DonationModal 
+        isOpen={isDonationOpen} 
+        onClose={() => setIsDonationOpen(false)} 
+        // Feed passes 'id' as 'campaign-1', so we must extract only the number!
+        campaignId={parseInt(id.replace(/\D/g, ''))} 
+      />
     </article>
   );
 }
