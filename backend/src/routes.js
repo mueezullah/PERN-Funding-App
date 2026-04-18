@@ -2,6 +2,7 @@ const express = require("express");
 const authRoutes = require("./modules/auth/auth.routes");
 const campaignRoutes = require("./modules/campaigns/campaign.routes");
 const postRoutes = require("./modules/posts/post.routes");
+const paymentRoutes = require("./modules/payments/payments.route");
 
 const router = express.Router();
 
@@ -9,5 +10,6 @@ const router = express.Router();
 router.use("/auth", authRoutes);
 router.use("/campaigns", campaignRoutes);
 router.use("/posts", postRoutes);
+router.use("/payments", paymentRoutes);
 
 module.exports = router;
