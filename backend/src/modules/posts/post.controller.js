@@ -1,4 +1,5 @@
 const Post = require("./post.model");
+const { getPaginationData, parsePaginationParams } = require("../../utils/pagination");
 
 const createPost = async (req, res, next) => {
   try {
@@ -6,13 +7,14 @@ const createPost = async (req, res, next) => {
     const userId = req.user.id;
 
     if (!content) {
-      return res.status(400).json({ message: "Post content is required" });
+      return res.status(400).json({ success: false, message: "Post content is required" });
     }
 
     const newPost = await Post.create(userId, content, mediaUrl);
     res.status(201).json({
+      success: true,
       message: "Post created successfully",
-      post: newPost
+      data: newPost
     });
   } catch (error) {
     next(error);
@@ -21,11 +23,18 @@ const createPost = async (req, res, next) => {
 
 const getAllPosts = async (req, res, next) => {
   try {
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = parseInt(req.query.offset) || 0;
+    const { page, limit } = parsePaginationParams(req.query.page, req.query.limit);
+    const offset = (page - 1) * limit;
 
-    const data = await Post.findAll(limit, offset);
-    res.status(200).json(data);
+    const { posts, total } = await Post.findAll(limit, offset);
+    
+    res.status(200).json({ 
+      success: true, 
+      data: {
+        posts,
+        pagination: getPaginationData(total, page, limit)
+      } 
+    });
   } catch (error) {
     next(error);
   }
@@ -34,15 +43,21 @@ const getAllPosts = async (req, res, next) => {
 const getUserPosts = async (req, res, next) => {
   try {
     const userId = parseInt(req.params.userId, 10);
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = parseInt(req.query.offset) || 0;
+    const { page, limit } = parsePaginationParams(req.query.page, req.query.limit);
+    const offset = (page - 1) * limit;
 
     if (!userId) {
-      return res.status(400).json({ message: "Invalid user ID" });
+      return res.status(400).json({ success: false, message: "Invalid user ID" });
     }
 
-    const data = await Post.findByUserId(userId, limit, offset);
-    res.status(200).json(data);
+    const { posts, total } = await Post.findByUserId(userId, limit, offset);
+    res.status(200).json({ 
+      success: true, 
+      data: {
+        posts,
+        pagination: getPaginationData(total, page, limit)
+      } 
+    });
   } catch (error) {
     next(error);
   }
@@ -57,13 +72,15 @@ const deletePost = async (req, res, next) => {
 
     if (!deletedPost) {
       return res.status(404).json({ 
+        success: false,
         message: "Post not found or you are not authorized to delete it" 
       });
     }
 
     res.status(200).json({
+      success: true,
       message: "Post deleted successfully",
-      post: deletedPost
+      data: deletedPost
     });
   } catch (error) {
     next(error);
