@@ -1,8 +1,8 @@
 const Joi = require('joi');
 
 const createCampaignSchema = Joi.object({
-  title: Joi.string().min(5).max(255).required(),
-  description: Joi.string().min(20).required(),
+  title: Joi.string().min(4).max(255).required(),
+  description: Joi.string().min(10).required(),
   goal_amount: Joi.number().positive().precision(2).required(),
   deadline: Joi.date().iso().greater('now').required(),
   media_url: Joi.string().uri().optional().allow(null, '')
