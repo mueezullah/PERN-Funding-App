@@ -7,6 +7,9 @@ const pool = new Pool({
   port: DB_PORT,
   password: DB_PASSWORD,
   database: DB_NAME,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
 
 pool.on("error", (err) => {

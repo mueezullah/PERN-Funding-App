@@ -3,11 +3,13 @@ const { PORT } = require("./config/env");
 const UserModel = require("./modules/users/user.model");
 const CampaignModel = require("./modules/campaigns/campaign.model");
 const PostModel = require("./modules/posts/post.model");
+const DonationModel = require("./modules/payments/donation.model");
 
 // Initialize the tables
 UserModel.init()
   .then(() => CampaignModel.init())
   .then(() => PostModel.init())
+  .then(() => DonationModel.init())
   .then(() => {
     console.log("Database schema initialized");
   })
