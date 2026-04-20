@@ -33,6 +33,7 @@ const signupUser = async (name, email, password) => {
       email: newUser.email,
       name: newUser.name,
       role,
+      id: newUser.id,
       redirectTo,
     },
   };
@@ -76,6 +77,7 @@ const loginUser = async (email, password) => {
       email,
       name: user.name,
       role: user.role,
+      id: user.id,
       redirectTo,
     },
   };
