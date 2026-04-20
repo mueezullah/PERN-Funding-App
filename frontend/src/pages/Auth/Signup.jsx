@@ -39,12 +39,13 @@ const Signup = () => {
       });
 
       const result = await response.json();
-      const { success, message, error, jwtToken, role, name, redirectTo } = result;
+      const { success, message, error, jwtToken, role, name, id, redirectTo } = result;
 
       if (success) {
         localStorage.setItem("loggedInUser", name);
         localStorage.setItem("token", jwtToken);
         localStorage.setItem("role", role);
+        localStorage.setItem("userId", String(id));
         handleSuccess(message);
         setTimeout(() => {
           navigate(redirectTo);

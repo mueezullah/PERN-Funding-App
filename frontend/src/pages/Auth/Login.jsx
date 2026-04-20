@@ -38,12 +38,13 @@ const Login = () => {
       });
 
       const result = await response.json();
-      const { success, message, jwtToken, name, error, role, redirectTo } = result;
+      const { success, message, jwtToken, name, error, role, id, redirectTo } = result;
       if (success) {
         handleSuccess(message);
         localStorage.setItem("token", jwtToken);
         localStorage.setItem("loggedInUser", name);
         localStorage.setItem("role", role);
+        localStorage.setItem("userId", String(id));
         setTimeout(() => {
           navigate(redirectTo);
         }, 1000);
