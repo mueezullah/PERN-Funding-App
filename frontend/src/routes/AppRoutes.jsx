@@ -15,6 +15,7 @@ import Feed from "../pages/Feed/FeedMain";
 import AdminDashboard from "../pages/Admin/AdminDashboard";
 import Landing from "../pages/Home/LandingMain";
 import CreateCampaignModal from "../pages/CreatorDashboard/CreateCampaignModal";
+import Campaigns from "../pages/CreatorDashboard/Campaigns";
 import { RootLayout as ProfileRootLayout } from "../pages/Profile/RootLayout";
 import { ProfileView } from "../pages/Profile/ProfileView";
 import KYCVerification from "../pages/KYC/KYCVerification";
@@ -122,6 +123,19 @@ const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
         element={
           <RoleRoute
             element={<CreateCampaignModal />}
+            allowedRoles={["fundraiser", "admin"]}
+            isAuthenticated={isAuthenticated}
+            isLoading={isLoading}
+          />
+        }
+      />
+
+      {/* Creator Dashboard — fundraiser & admin only */}
+      <Route
+        path="/creator/dashboard"
+        element={
+          <RoleRoute
+            element={<Campaigns />}
             allowedRoles={["fundraiser", "admin"]}
             isAuthenticated={isAuthenticated}
             isLoading={isLoading}
