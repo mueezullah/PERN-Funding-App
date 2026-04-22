@@ -17,7 +17,8 @@
     "express": "^5.2.1",
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.18.0"
+    "pg": "^8.18.0",
+    "stripe": "^22.0.2"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
