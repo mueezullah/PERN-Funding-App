@@ -58,6 +58,7 @@ export function Feed() {
     type: "campaign" as const,
     createdAt: campaign.created_at,
     user: {
+      id: campaign.user_id,
       name: campaign.owner_name || "Anonymous",
       avatar: "",
       role: "Fundraiser",

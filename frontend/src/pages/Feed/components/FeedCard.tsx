@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { Heart, MessageSquare, Share2, MoreHorizontal, Bookmark, Clock } from 'lucide-react';
 import { ImageWithFallback } from './ImageFallback/ImageWithFallback';
 import DonationModal from '../../../components/DonationModal';
+import { useNavigate } from 'react-router-dom';
 
 interface FeedCardProps {
   id: string;
   type?: 'campaign' | 'post' | 'thread';
   user: {
+    id?: string | number;
     name: string;
     avatar: string;
     role: string;
@@ -28,6 +30,7 @@ interface FeedCardProps {
 
 export function FeedCard({ id, type = 'campaign', user, content, stats, deadline }: FeedCardProps) {
   const [isDonationOpen, setIsDonationOpen] = useState(false);
+  const navigate = useNavigate();
 
   const isCampaign = type === 'campaign' && stats.raised !== undefined && stats.goal !== undefined;
   const progress = isCampaign ? Math.min((stats.raised! / stats.goal!) * 100, 100) : 0;
@@ -116,12 +119,21 @@ export function FeedCard({ id, type = 'campaign', user, content, stats, deadline
           </button>
         </div>
 
-        {isCampaign && (
+        {isCampaign && String(user.id) !== String(localStorage.getItem('userId')) && (
           <button 
             onClick={() => setIsDonationOpen(true)}
             className="px-5 py-2 sm:px-6 sm:py-2.5 bg-slate-900 text-white font-bold text-[13px] sm:text-[14px] rounded-full hover:bg-slate-800 active:scale-95 transition-all shadow-sm"
           >
             Donate Now
+          </button>
+        )}
+
+        {isCampaign && String(user.id) === String(localStorage.getItem('userId')) && (
+          <button 
+            onClick={() => navigate('/creator/dashboard')}
+            className="px-5 py-2 sm:px-6 sm:py-2.5 bg-indigo-600 text-white font-bold text-[13px] sm:text-[14px] rounded-full hover:bg-indigo-700 active:scale-95 transition-all shadow-sm"
+          >
+            View Analytics
           </button>
         )}
       </div>
