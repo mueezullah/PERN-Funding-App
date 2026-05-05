@@ -1,7 +1,7 @@
-import React from 'react';
-import { ProfileFeed } from './profileFeed';
-import { ProfileRightSidebar } from './RightCard';
-import { useParams } from 'react-router';
+import React from "react";
+import { ProfileFeed } from "./ProfileFeed";
+import { ProfileRightSidebar } from "./RightCard";
+import { useParams } from "react-router";
 
 export function ProfileView() {
   const { username } = useParams<{ username: string }>();

@@ -7,6 +7,7 @@ const paymentRoutes = require("./modules/payments/payments.route");
 const router = express.Router();
 
 // Mount module routes
+router.get("/health", (req, res) => res.send("Working!!!"));
 router.use("/auth", authRoutes);
 router.use("/campaigns", campaignRoutes);
 router.use("/posts", postRoutes);
