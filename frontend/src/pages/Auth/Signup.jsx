@@ -29,7 +29,7 @@ const Signup = () => {
       return handleError("All fields required");
     }
     try {
-      const url = "http://localhost:8080/auth/signup";
+      const url = `${import.meta.env.VITE_BASE_API_URL}/auth/signup`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -39,7 +39,8 @@ const Signup = () => {
       });
 
       const result = await response.json();
-      const { success, message, error, jwtToken, role, name, id, redirectTo } = result;
+      const { success, message, error, jwtToken, role, name, id, redirectTo } =
+        result;
 
       if (success) {
         localStorage.setItem("loggedInUser", name);
@@ -73,7 +74,9 @@ const Signup = () => {
         <h1 className="text-2xl font-bold mb-5">SignUp</h1>
         <form onSubmit={handleSignup} className="flex flex-col gap-2.5">
           <div className="flex flex-col">
-            <label htmlFor="name" className="text-xl">Name</label>
+            <label htmlFor="name" className="text-xl">
+              Name
+            </label>
             <input
               onChange={handleChange}
               type="text"
@@ -85,7 +88,9 @@ const Signup = () => {
             />
           </div>
           <div className="flex flex-col">
-            <label htmlFor="email" className="text-xl">Email</label>
+            <label htmlFor="email" className="text-xl">
+              Email
+            </label>
             <input
               onChange={handleChange}
               type="email"
@@ -96,7 +101,9 @@ const Signup = () => {
             />
           </div>
           <div className="flex flex-col">
-            <label htmlFor="password" className="text-xl">Password</label>
+            <label htmlFor="password" className="text-xl">
+              Password
+            </label>
             <input
               onChange={handleChange}
               type="password"

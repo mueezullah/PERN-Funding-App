@@ -233,11 +233,14 @@ const AdminDashboard = ({ setIsAuthenticated }) => {
     const fetchUsers = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:8080/auth/users", {
-          headers: {
-            Authorization: token,
+        const response = await fetch(
+          `${import.meta.env.VITE_BASE_API_URL}/auth/users`,
+          {
+            headers: {
+              Authorization: token,
+            },
           },
-        });
+        );
         const data = await response.json();
         if (data.success) {
           setUsers(data.users);
@@ -300,10 +303,11 @@ const AdminDashboard = ({ setIsAuthenticated }) => {
                 setSidebarOpen(false);
               }}
               className={`w-full group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer
-                                ${activeView === item.key
-                  ? "bg-indigo-800 text-white"
-                  : "text-indigo-300 hover:bg-indigo-700 hover:text-white"
-                }`}
+                                ${
+                                  activeView === item.key
+                                    ? "bg-indigo-800 text-white"
+                                    : "text-indigo-300 hover:bg-indigo-700 hover:text-white"
+                                }`}
             >
               <item.icon className="mr-3 h-6 w-6" />
               {item.label}
