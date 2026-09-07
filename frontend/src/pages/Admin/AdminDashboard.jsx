@@ -20,7 +20,15 @@ const AdminDashboard = ({ setIsAuthenticated }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Handle Logout functionality
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await fetch(`${import.meta.env.VITE_BASE_API_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (e) {
+      console.error(e);
+    }
     localStorage.removeItem("token");
     localStorage.removeItem("name");
     localStorage.removeItem("role");
