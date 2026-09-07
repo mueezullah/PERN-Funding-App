@@ -4,13 +4,14 @@ export const initTable = async () => {
   console.log("Comments table verified via Prisma");
 };
 
-export const create = async (userId, targetType, targetId, content) => {
+export const create = async (userId, targetType, targetId, content, parentId = null) => {
   return await prisma.comment.create({
     data: {
       user_id: parseInt(userId, 10),
       target_type: targetType,
       target_id: parseInt(targetId, 10),
       content,
+      parent_id: parentId ? parseInt(parentId, 10) : null,
     },
   });
 };
@@ -31,6 +32,14 @@ export const findByTarget = async (targetType, targetId, since = null) => {
       user: {
         select: { name: true, username: true, role: true },
       },
+      parent: {
+        select: {
+          id: true,
+          user: {
+            select: { name: true, username: true },
+          },
+        },
+      },
     },
     orderBy: [
       { created_at: "asc" },
@@ -43,6 +52,9 @@ export const findByTarget = async (targetType, targetId, since = null) => {
     author_name: c.user?.name,
     author_username: c.user?.username,
     author_role: c.user?.role,
+    author_avatar: c.user?.avatar_url,
+    reply_to_name: c.parent?.user?.name,
+    reply_to_username: c.parent?.user?.username,
   }));
 };
 

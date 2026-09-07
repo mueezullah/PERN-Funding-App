@@ -31,7 +31,7 @@ export const getComments = asyncHandler(async (req, res, next) => {
 });
 
 export const createComment = asyncHandler(async (req, res, next) => {
-  const { targetType, targetId, content } = req.body;
+  const { targetType, targetId, content, parentId, parent_id } = req.body;
   const userId = req.user.id;
 
   if (!targetType || !targetId || !content) {
@@ -63,15 +63,34 @@ export const createComment = asyncHandler(async (req, res, next) => {
     });
   }
 
-  const newComment = await Comment.create(userId, targetType, numericTargetId, content.trim());
+  const rawParentId = parentId !== undefined ? parentId : parent_id;
+  const resolvedParentId = rawParentId ? parseInt(rawParentId, 10) : null;
+
+  if (resolvedParentId) {
+    const parentComment = await Comment.findById(resolvedParentId);
+    if (!parentComment) {
+      return res.status(404).json({
+        success: false,
+        message: "Parent comment not found"
+      });
+    }
+    if (parentComment.target_type !== targetType || parentComment.target_id !== numericTargetId) {
+      return res.status(400).json({
+        success: false,
+        message: "Parent comment does not belong to this target"
+      });
+    }
+  }
+
+  const newComment = await Comment.create(userId, targetType, numericTargetId, content.trim(), resolvedParentId);
   
-  // Fetch new comment with author details to return immediately
+  // Fetch new comment with author and parent reply details to return immediately
   const commentsList = await Comment.findByTarget(targetType, numericTargetId);
   const commentWithDetails = commentsList.find(c => c.id === newComment.id);
 
   res.status(201).json({
     success: true,
-    message: "Comment added successfully",
+    message: resolvedParentId ? "Reply added successfully" : "Comment added successfully",
     data: commentWithDetails || newComment
   });
 });

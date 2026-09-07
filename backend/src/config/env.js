@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-const requiredEnvs = ["JWT_SECRET", "DB_PASSWORD"];
+const requiredEnvs = ["JWT_SECRET", "REFRESH_TOKEN_SECRET", "DB_PASSWORD"];
 const missingEnvs = requiredEnvs.filter((envName) => !process.env[envName]);
 
 if (missingEnvs.length > 0) {
@@ -12,6 +12,7 @@ if (missingEnvs.length > 0) {
 
 const PORT = process.env.PORT || 8080;
 const JWT_SECRET = process.env.JWT_SECRET;
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 const DB_HOST = process.env.DB_HOST || "localhost";
 const DB_USER = process.env.DB_USER || "postgres";
 const DB_PORT = process.env.DB_PORT;
@@ -31,6 +32,7 @@ const AWS_S3_BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME;
 export default {
   PORT,
   JWT_SECRET,
+  REFRESH_TOKEN_SECRET,
   DB_HOST,
   DB_USER,
   DB_PORT,
