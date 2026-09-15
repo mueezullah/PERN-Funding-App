@@ -4,7 +4,6 @@ import AppRoutes from "./routes/AppRoutes";
 import { ToastContainer } from "react-toastify";
 import MinimalToast from "./components/MinimalToast";
 import ChatWidget from "./components/ChatWidget";
-import "react-toastify/dist/ReactToastify.css";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

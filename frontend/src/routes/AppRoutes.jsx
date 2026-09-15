@@ -170,22 +170,6 @@ const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
           />
         }
       />
-
-      {/*
-        To add more role-restricted routes in the future:
-
-        <Route
-          path="/moderatorPanel"
-          element={
-            <RoleRoute
-              element={<ModeratorPanel />}
-              allowedRoles={["admin", "moderator"]}
-              isAuthenticated={isAuthenticated}
-              isLoading={isLoading}
-            />
-          }
-        />
-      */}
     </Routes>
   );
 };
