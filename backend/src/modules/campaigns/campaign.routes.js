@@ -5,10 +5,10 @@ import {
   getOne,
   getUserCampaigns,
   update,
+  deleteCampaign,
 } from "./campaign.controller.js";
 import { validateCreate, validateUpdate } from "./campaign.validation.js";
 import { ensureAuthenticated } from "../auth/auth.middleware.js";
-import { deleteCampaign } from "./campaign.controller.js";
 
 const router = Router();
 
