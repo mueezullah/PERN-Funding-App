@@ -16,19 +16,10 @@ import {
 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { handleSuccess, handleError } from "../../../utils";
-import { ImageWithFallback } from "./ImageFallback/ImageWithFallback";
+import { ImageWithFallback } from "../../../components/ImageWithFallback";
 import DonationModal from "../../../components/DonationModal";
 import { useNavigate } from "react-router-dom";
 import { useLike } from "../../../features/likes/useLike";
-
-declare global {
-  interface ImportMetaEnv {
-    readonly VITE_BASE_API_URL: string;
-  }
-  interface ImportMeta {
-    readonly env: ImportMetaEnv;
-  }
-}
 
 interface FeedCardProps {
   id: string;
