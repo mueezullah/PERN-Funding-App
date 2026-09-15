@@ -1,9 +1,5 @@
 import prisma from "../../config/prisma.js";
 
-export const initTable = async () => {
-  console.log("Likes table verified via Prisma");
-};
-
 export const toggle = async (userId, targetType, targetId) => {
   const uId = parseInt(userId, 10);
   const tId = parseInt(targetId, 10);

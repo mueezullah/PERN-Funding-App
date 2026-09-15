@@ -1,9 +1,5 @@
 import prisma from "../../config/prisma.js";
 
-export const initTable = async () => {
-  console.log("Posts table verified via Prisma");
-};
-
 export const createPost = async (userId, content, mediaUrl) => {
   return await prisma.post.create({
     data: {

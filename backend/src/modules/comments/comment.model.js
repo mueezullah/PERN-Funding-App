@@ -1,9 +1,5 @@
 import prisma from "../../config/prisma.js";
 
-export const initTable = async () => {
-  console.log("Comments table verified via Prisma");
-};
-
 export const create = async (userId, targetType, targetId, content, parentId = null) => {
   return await prisma.comment.create({
     data: {
