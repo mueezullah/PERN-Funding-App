@@ -1,6 +1,6 @@
 import React from 'react';
 import { TrendingUp, UserPlus, Heart, BarChart3, ChevronRight } from 'lucide-react';
-import { ImageWithFallback } from './ImageFallback/ImageWithFallback';
+import { ImageWithFallback } from '../../../components/ImageWithFallback';
 
 export function RightSidebar() {
   const trending = [
