@@ -108,6 +108,10 @@ export const refreshToken = async (req, res) => {
     return res.status(200).json({
       success: true,
       jwtToken: newAccessToken,
+      role: user.role,
+      name: user.name,
+      username: user.username,
+      userId: user.id,
     });
   } catch (error) {
     console.error(error);
