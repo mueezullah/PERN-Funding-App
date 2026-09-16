@@ -8,7 +8,11 @@ const getAuthHeaders = (): Record<string, string> => {
   };
 };
 
-export const fetchComments = async (targetType: string, targetId: string | number, since: string = ""): Promise<any[]> => {
+export const fetchComments = async (
+  targetType: string,
+  targetId: string | number,
+  since: string = ""
+): Promise<any[]> => {
   const url = `${API_BASE}?targetType=${targetType}&targetId=${targetId}${since ? `&since=${since}` : ""}`;
   const res = await fetch(url);
   const data = await res.json();
@@ -18,11 +22,21 @@ export const fetchComments = async (targetType: string, targetId: string | numbe
   return data.data;
 };
 
-export const postComment = async (targetType: string, targetId: string | number, content: string) => {
+export const postComment = async (
+  targetType: string,
+  targetId: string | number,
+  content: string,
+  parentId?: number | null
+) => {
   const res = await fetch(API_BASE, {
     method: "POST",
     headers: getAuthHeaders(),
-    body: JSON.stringify({ targetType, targetId, content }),
+    body: JSON.stringify({
+      targetType,
+      targetId,
+      content,
+      parentId: parentId || null,
+    }),
   });
   const data = await res.json();
   if (!res.ok || !data.success) {
