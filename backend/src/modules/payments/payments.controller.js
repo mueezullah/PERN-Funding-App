@@ -6,7 +6,6 @@
 
 import pool from "../../config/db.js";
 import Stripe from "stripe"
-import { findById as findCampaignById } from "../campaigns/campaign.model.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 

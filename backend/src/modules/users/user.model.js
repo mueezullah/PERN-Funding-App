@@ -1,22 +1,5 @@
 import prisma from "../../config/prisma.js";
 
-// User Schema Structure reference
-export const UserSchema = {
-  id: "SERIAL PRIMARY KEY",
-  name: "VARCHAR(255) NOT NULL",
-  username: "VARCHAR(20) UNIQUE NOT NULL",
-  email: "VARCHAR(255) UNIQUE NOT NULL",
-  password: "VARCHAR(255) NOT NULL",
-  role: "VARCHAR(20) NOT NULL DEFAULT 'user'",
-  kyc_verified: "BOOLEAN DEFAULT FALSE",
-  created_at: "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
-};
-
-export const initializeTable = async () => {
-  // Database tables managed by Prisma Schema/Migrations
-  console.log("Users table verified via Prisma");
-};
-
 // User Model operations using Prisma Client
 
 export const create = async (name, username, email, password) => {

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
 import { handleError } from "../../utils";
 import ScrollLock from "../../components/ScrollLock";
 
@@ -33,6 +32,7 @@ const Login = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // needed to receive & store the httpOnly refresh token cookie
         body: JSON.stringify(loginInfo),
       });
 
@@ -105,7 +105,6 @@ const Login = () => {
             Don't have an account ? <Link to="/signup">Signup</Link>
           </span>
         </form>
-        <ToastContainer />
       </div>
     </div>
   );

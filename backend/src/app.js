@@ -1,8 +1,10 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import routes from "./routes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { stripeWebhook } from "./modules/payments/payments.controller.js";
+import env from "./config/env.js";
 
 const app = express();
 
@@ -26,7 +28,23 @@ app.post(
 // Global request pipeline parsing and security middlewares
 // (Everything AFTER this line receives parsed JSON bodies as usual)
 app.use(express.json());
-app.use(cors());
+
+// ─── CORS ────────────────────────────────────────────────────────────────────
+// credentials: true is REQUIRED for the browser to send the httpOnly
+// refresh-token cookie cross-origin. The origin must be explicit (not "*")
+// when credentials are enabled.
+app.use(
+  cors({
+    origin: env.CLIENT_URL,
+    credentials: true,           // allow cookies in cross-origin requests
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+// ─── Cookie parser ──────────────────────────────────────────────────────────
+// Required for req.cookies to be populated (reads the httpOnly refresh cookie)
+app.use(cookieParser());
 
 // mount all routes
 app.use(routes);

@@ -8,6 +8,7 @@ import commentRoutes from "./modules/comments/comment.routes.js";
 import likeRoutes from "./modules/likes/like.routes.js";
 import followRoutes from "./modules/follows/follow.routes.js";
 import uploadRoutes from "./modules/upload/upload.routes.js";
+import adminRoutes from "./modules/admin/admin.routes.js";
 
 const router = express.Router();
 
@@ -24,5 +25,6 @@ router.use("/comments", commentRoutes);
 router.use("/likes", likeRoutes);
 router.use("/follows", followRoutes);
 router.use("/upload", uploadRoutes);
+router.use("/admin", adminRoutes);
 
 export default router;

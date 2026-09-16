@@ -5,7 +5,7 @@ import { Navbar } from "../Feed/components/Navbar";
 import { Sidebar } from "../Feed/components/Sidebar";
 import { fetchCampaignById } from "../../features/creator/creatorAPI";
 import { formatRelativeTime } from "../../utils";
-import { ImageWithFallback } from "../Feed/components/ImageFallback/ImageWithFallback";
+import { ImageWithFallback } from "../../components/ImageWithFallback";
 import { DonationModal } from "../../components/DonationModal";
 import { CommentSection } from "./CommentSection";
 import { useLike } from "../../features/likes/useLike";

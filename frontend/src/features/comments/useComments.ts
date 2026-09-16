@@ -29,7 +29,7 @@ export function useComments(targetType: string, targetId: string | number) {
     let since = "";
     if (currentList.length > 0) {
       // Find the latest non-temporary comment
-      const nonTempComments = currentList.filter(c => !String(c.id).startsWith("temp_"));
+      const nonTempComments = currentList.filter((c) => !String(c.id).startsWith("temp_"));
       if (nonTempComments.length > 0) {
         since = nonTempComments[nonTempComments.length - 1].created_at;
       }
@@ -40,9 +40,9 @@ export function useComments(targetType: string, targetId: string | number) {
       if (newComments && newComments.length > 0) {
         setComments((prev) => {
           // Merge lists and filter out duplicates by ID
-          const existingIds = new Set(prev.map(c => c.id));
-          const filteredNew = (newComments as any[]).filter(nc => !existingIds.has(nc.id));
-          
+          const existingIds = new Set(prev.map((c) => c.id));
+          const filteredNew = (newComments as any[]).filter((nc) => !existingIds.has(nc.id));
+
           if (filteredNew.length === 0) return prev;
           return [...prev, ...filteredNew];
         });
@@ -91,50 +91,63 @@ export function useComments(targetType: string, targetId: string | number) {
     };
   }, [loadInitialComments, pollNewComments]);
 
-  // Add Comment with optimistic UI updates
-  const addComment = useCallback(async (content: string) => {
-    const tempId = `temp_${Date.now()}`;
-    const name = localStorage.getItem("name") || "Me";
-    const username = localStorage.getItem("username") || "me";
-    const role = localStorage.getItem("role") || "user";
-    const userId = localStorage.getItem("userId");
+  // Add Comment with optimistic UI updates (supports parentId for replies)
+  const addComment = useCallback(
+    async (content: string, parentId?: number | null) => {
+      const tempId = `temp_${Date.now()}`;
+      const name = localStorage.getItem("name") || "Me";
+      const username = localStorage.getItem("username") || "me";
+      const role = localStorage.getItem("role") || "user";
+      const userId = localStorage.getItem("userId");
 
-    const optimisticComment = {
-      id: tempId,
-      user_id: userId ? parseInt(userId, 10) : 0,
-      target_type: targetType,
-      target_id: typeof targetId === "string" ? parseInt(targetId, 10) : targetId,
-      content,
-      created_at: new Date().toISOString(),
-      author_name: name,
-      author_username: username,
-      author_role: role
-    };
+      // Find parent comment details if replying
+      const parentComment = parentId
+        ? commentsRef.current.find((c) => c.id === parentId)
+        : null;
 
-    // Optimistically update list
-    setComments((prev) => [...prev, optimisticComment]);
+      const optimisticComment = {
+        id: tempId,
+        user_id: userId ? parseInt(userId, 10) : 0,
+        target_type: targetType,
+        target_id: typeof targetId === "string" ? parseInt(targetId, 10) : targetId,
+        parent_id: parentId ? parseInt(String(parentId), 10) : null,
+        content,
+        created_at: new Date().toISOString(),
+        author_name: name,
+        author_username: username,
+        author_role: role,
+        reply_to_name: parentComment?.author_name || null,
+        reply_to_username: parentComment?.author_username || null,
+      };
 
-    try {
-      const realComment = await commentsAPI.postComment(targetType, targetId, content);
-      
-      // Swap optimistic comment with the real response
-      setComments((prev) => 
-        prev.map(c => c.id === tempId ? realComment : c)
-      );
-      return realComment;
-    } catch (err: any) {
-      // Revert optimistic update on failure
-      setComments((prev) => prev.filter(c => c.id !== tempId));
-      throw err;
-    }
-  }, [targetType, targetId]);
+      // Optimistically update list
+      setComments((prev) => [...prev, optimisticComment]);
+
+      try {
+        const realComment = await commentsAPI.postComment(targetType, targetId, content, parentId);
+
+        // Swap optimistic comment with the real response
+        setComments((prev) =>
+          prev.map((c) => (c.id === tempId ? realComment : c))
+        );
+        return realComment;
+      } catch (err: any) {
+        // Revert optimistic update on failure
+        setComments((prev) => prev.filter((c) => c.id !== tempId));
+        throw err;
+      }
+    },
+    [targetType, targetId]
+  );
 
   // Delete Comment with optimistic UI updates
   const removeComment = useCallback(async (commentId: number) => {
     const originalComments = [...commentsRef.current];
 
-    // Optimistically update list
-    setComments((prev) => prev.filter(c => c.id !== commentId));
+    // Optimistically remove comment and any of its child replies
+    setComments((prev) =>
+      prev.filter((c) => c.id !== commentId && c.parent_id !== commentId)
+    );
 
     try {
       await commentsAPI.deleteComment(commentId);
@@ -145,6 +158,5 @@ export function useComments(targetType: string, targetId: string | number) {
     }
   }, []);
 
-  // Return it:
   return { comments, loading, error, addComment, removeComment };
 }

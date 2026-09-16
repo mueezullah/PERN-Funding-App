@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
 import { handleError } from "../../utils";
 import ScrollLock from "../../components/ScrollLock";
 
@@ -16,7 +15,6 @@ const Signup = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    console.log(name, value);
     const copySignupInfo = { ...signupInfo }; // <-- shallow copy of the state object to avoid mutating the original state directly
     copySignupInfo[name] = value;
     setSignupInfo(copySignupInfo);
@@ -36,6 +34,7 @@ const Signup = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // needed to receive & store the httpOnly refresh token cookie
         body: JSON.stringify(signupInfo),
       });
 
@@ -136,7 +135,6 @@ const Signup = () => {
             Already have an account ? <Link to="/login">Login</Link>
           </span>
         </form>
-        <ToastContainer />
       </div>
     </div>
   );

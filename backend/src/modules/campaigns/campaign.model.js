@@ -1,9 +1,5 @@
 import prisma from "../../config/prisma.js";
 
-export const initTable = async () => {
-  console.log("Campaigns table verified via Prisma");
-};
-
 export const create = async (
   userId,
   title,

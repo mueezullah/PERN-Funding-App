@@ -1,9 +1,5 @@
 import prisma from "../../config/prisma.js";
 
-export const initTable = async () => {
-  console.log("Donations table verified via Prisma");
-};
-
 export const createDonation = async (campaignId, donorId, amount, stripePaymentIntentId) => {
   return await prisma.donation.create({
     data: {

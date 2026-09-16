@@ -1,9 +1,5 @@
 import prisma from "../../config/prisma.js";
 
-export const initTable = async () => {
-  console.log("Follows table verified via Prisma");
-};
-
 export const toggleFollow = async (followerId, followingId) => {
   const fId = parseInt(followerId, 10);
   const targetId = parseInt(followingId, 10);

@@ -71,7 +71,18 @@ export function Navbar({
     };
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // 1. Clear the httpOnly refresh cookie on the backend FIRST
+    try {
+      await fetch(`${import.meta.env.VITE_BASE_API_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (e) {
+      console.error("Logout request failed:", e);
+    }
+    // 2. Clear all local state — AFTER the cookie is gone so RefreshHandler
+    //    cannot silently re-authenticate using the (now-cleared) cookie
     localStorage.removeItem("token");
     localStorage.removeItem("name");
     localStorage.removeItem("role");

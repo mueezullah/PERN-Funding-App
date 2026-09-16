@@ -1,5 +1,5 @@
 import express from "express";
-import { createDonationIntent, confirmDonation, stripeWebhook, cleanupStaleDonations } from './payments.controller.js';
+import { createDonationIntent, confirmDonation, cleanupStaleDonations } from './payments.controller.js';
 import { ensureAuthenticated } from '../auth/auth.middleware.js';
 
 const router = express.Router();

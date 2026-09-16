@@ -1,6 +1,6 @@
 import * as UserModel from "../users/user.model.js";
 import { hashPassword, comparePassword } from "../../utils/hash.js";
-import { generateToken } from "../../utils/jwt.js";
+import { generateToken, generateRefreshToken } from "../../utils/jwt.js";
 
 export const signupUser = async (name, username, email, password) => {
   const existingUserEmail = await UserModel.findByEmail(email);
@@ -19,12 +19,9 @@ export const signupUser = async (name, username, email, password) => {
   const role = newUser.role || "user";
   const kyc_verified = newUser.kyc_verified || false;
 
-  const jwtToken = generateToken({
-    email: newUser.email,
-    id: newUser.id,
-    role,
-    kyc_verified,
-  });
+  const tokenPayload = { email: newUser.email, id: newUser.id, role, kyc_verified };
+  const jwtToken = generateToken(tokenPayload);
+  const refreshToken = generateRefreshToken({ id: newUser.id });
 
   // Determine redirection path based on role
   const redirectTo = role === "admin" ? "/admin/dashboard" : "/feed";
@@ -32,6 +29,7 @@ export const signupUser = async (name, username, email, password) => {
   return {
     success: true,
     status: 201,
+    refreshToken,
     data: {
       message: "User registered successfully",
       success: true,
@@ -62,12 +60,9 @@ export const loginUser = async (email, password) => {
     return { success: false, status: 401, message: errorMessage };
   }
 
-  const jwtToken = generateToken({
-    email: user.email,
-    id: user.id,
-    role: user.role,
-    kyc_verified: user.kyc_verified,
-  });
+  const tokenPayload = { email: user.email, id: user.id, role: user.role, kyc_verified: user.kyc_verified };
+  const jwtToken = generateToken(tokenPayload);
+  const refreshToken = generateRefreshToken({ id: user.id });
 
   // Determine redirection path based on role
   const redirectTo =
@@ -80,6 +75,7 @@ export const loginUser = async (email, password) => {
   return {
     success: true,
     status: 200,
+    refreshToken,
     data: {
       message: "Login success",
       success: true,
