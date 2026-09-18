@@ -1,10 +1,33 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Plus, User, Heart, MessageCircle, Share2, Clock, Camera, Loader2 } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Plus,
+  User,
+  Heart,
+  MessageCircle,
+  Share2,
+  Clock,
+  Camera,
+  Loader2,
+  MoreHorizontal,
+  Trash2,
+  Edit2,
+  Pin,
+  AlertTriangle,
+  UserPlus,
+  EyeOff,
+  Bookmark,
+  DollarSign,
+  CheckCircle2,
+} from "lucide-react";
 import { clsx } from "clsx";
-import { formatRelativeTime } from "../../utils";
+import { formatRelativeTime, handleError, handleSuccess } from "../../utils";
+import { showMinimalToast } from "../../components/MinimalToast";
 import { CreateThreadModal } from "../Feed/components/CreateThreadModal";
+import CreateCampaignModal from "../CreatorDashboard/CreateCampaignModal";
 import { useLike } from "../../features/likes/useLike";
+import { toggleBookmark } from "../../features/bookmarks/bookmarksAPI";
+import { EditProfileModal } from "../../components/EditProfileModal";
 
 function ProfileLikeButton({
   type,
@@ -24,22 +47,15 @@ function ProfileLikeButton({
         e.stopPropagation();
         toggleLike();
       }}
-      className={`inline-flex items-center gap-2 text-sm transition-colors cursor-pointer ${liked ? "text-rose-500 font-semibold" : "text-slate-500 hover:text-slate-900"
-        }`}
+      className={`inline-flex items-center gap-2 text-sm transition-colors cursor-pointer ${
+        liked ? "text-rose-500 font-semibold" : "text-slate-500 hover:text-slate-900"
+      }`}
     >
       <Heart className={`w-4 h-4 ${liked ? "fill-current" : ""}`} />
       <span>{displayCount}</span>
     </span>
   );
 }
-
-const sectionData = [
-  { key: "Posts", title: "Posts" },
-  { key: "Campaigns", title: "Campaigns" },
-  { key: "Donations", title: "Donations" },
-  { key: "Saved", title: "Saved" },
-  { key: "About", title: "About" },
-];
 
 const POSTS_PAGE_SIZE = 4;
 const CAMPAIGNS_PAGE_SIZE = 3;
@@ -64,29 +80,266 @@ export function ProfileFeed({
   isOwnProfile?: boolean;
 }) {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("Posts");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") || "Posts";
+
+  const sectionData = [
+    { key: "Posts", title: "Posts" },
+    { key: "Campaigns", title: "Campaigns" },
+    ...(isOwnProfile
+      ? [
+          { key: "Donations", title: "Donations" },
+          { key: "Saved", title: "Saved" },
+        ]
+      : []),
+    { key: "About", title: "About" },
+  ];
+
+  const [activeTab, setActiveTab] = useState(
+    sectionData.some((s) => s.key.toLowerCase() === initialTab.toLowerCase())
+      ? sectionData.find((s) => s.key.toLowerCase() === initialTab.toLowerCase())!.key
+      : "Posts"
+  );
+
   const [posts, setPosts] = useState<any[]>([]);
   const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [savedItems, setSavedItems] = useState<any[]>([]);
+  const [donations, setDonations] = useState<any[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<number | null>(null);
+  const [userProfileData, setUserProfileData] = useState<any | null>(null);
+
   const [postsPagination, setPostsPagination] = useState<any | null>(null);
-  const [campaignsPagination, setCampaignsPagination] = useState<any | null>(
-    null,
-  );
+  const [campaignsPagination, setCampaignsPagination] = useState<any | null>(null);
+  const [savedPagination, setSavedPagination] = useState<any | null>(null);
+  const [donationsPagination, setDonationsPagination] = useState<any | null>(null);
+
   const [isThreadModalOpen, setIsThreadModalOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<any | null>(null);
+  const [editingCampaign, setEditingCampaign] = useState<any | null>(null);
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [avatarState, setAvatarState] = useState<string | null>(
     isOwnProfile ? localStorage.getItem("avatar") : null
   );
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [localName, setLocalName] = useState(name || "");
+  const [localUsername, setLocalUsername] = useState(username || "");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const observer = useRef<IntersectionObserver | null>(null);
 
+  // Sync tab with URL query parameter changes
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam && sectionData.some((s) => s.key.toLowerCase() === tabParam.toLowerCase())) {
+      const matchedKey = sectionData.find((s) => s.key.toLowerCase() === tabParam.toLowerCase())!.key;
+      setActiveTab(matchedKey);
+    }
+  }, [searchParams, isOwnProfile]);
+
+  const handleTabChange = (tabKey: string) => {
+    setActiveTab(tabKey);
+    setSearchParams({ tab: tabKey });
+  };
+
+  // Sync name/username with props
+  useEffect(() => {
+    if (name) setLocalName(name);
+  }, [name]);
+  useEffect(() => {
+    if (username) setLocalUsername(username);
+  }, [username]);
+
+  // Listen for profileUpdate events from EditProfileModal
+  useEffect(() => {
+    const handleProfileUpdate = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.name) setLocalName(detail.name);
+      if (detail?.username) setLocalUsername(detail.username);
+    };
+    window.addEventListener("profileUpdate", handleProfileUpdate);
+    return () => window.removeEventListener("profileUpdate", handleProfileUpdate);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = () => setActiveMenuId(null);
+    if (activeMenuId) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [activeMenuId]);
+
+  const currentUserId = localStorage.getItem("userId");
+  const isItemOwner = (itemUserId?: string | number) => {
+    if (isOwnProfile) return true;
+    return Boolean(currentUserId && itemUserId && String(itemUserId) === String(currentUserId));
+  };
+
+  const handleDeletePost = async (postId: number) => {
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
+    setActiveMenuId(null);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_BASE_API_URL}/posts/${postId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setPosts((prev) => prev.filter((p) => p.id !== postId));
+        showMinimalToast("Post Deleted");
+      } else {
+        handleError(data.message || "Failed to delete post");
+      }
+    } catch (err: any) {
+      handleError(err.message || "Failed to delete post");
+    }
+  };
+
+  const handleDeleteCampaign = async (campaignId: number) => {
+    if (!window.confirm("Are you sure you want to delete this campaign?")) return;
+    setActiveMenuId(null);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_BASE_API_URL}/campaigns/${campaignId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setCampaigns((prev) => prev.filter((c) => c.id !== campaignId));
+        showMinimalToast("Campaign Deleted");
+      } else {
+        handleError(data.message || "Failed to delete campaign");
+      }
+    } catch (err: any) {
+      handleError(err.message || "Failed to delete campaign");
+    }
+  };
+
+  const handleTogglePinPost = async (postId: number) => {
+    setActiveMenuId(null);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_BASE_API_URL}/posts/${postId}/pin`, {
+        method: "PATCH",
+        headers: {
+          Authorization: token?.startsWith("Bearer ") ? token : `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        const isPinned = data.data.pinned;
+        setPosts((prev) => {
+          const updated = prev.map((p) =>
+            p.id === postId ? { ...p, pinned_at: isPinned ? new Date().toISOString() : null } : p
+          );
+          return [...updated].sort((a, b) => {
+            if (a.pinned_at && !b.pinned_at) return -1;
+            if (!a.pinned_at && b.pinned_at) return 1;
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          });
+        });
+        showMinimalToast(isPinned ? "Post Pinned to Profile" : "Post Unpinned");
+      } else {
+        handleError(data.message || "Failed to toggle pin");
+      }
+    } catch (err: any) {
+      handleError(err.message || "Failed to toggle pin");
+    }
+  };
+
+  const handleTogglePinCampaign = async (campaignId: number) => {
+    setActiveMenuId(null);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_BASE_API_URL}/campaigns/${campaignId}/pin`, {
+        method: "PATCH",
+        headers: {
+          Authorization: token?.startsWith("Bearer ") ? token : `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        const isPinned = data.data.pinned;
+        setCampaigns((prev) => {
+          const updated = prev.map((c) =>
+            c.id === campaignId ? { ...c, pinned_at: isPinned ? new Date().toISOString() : null } : c
+          );
+          return [...updated].sort((a, b) => {
+            if (a.pinned_at && !b.pinned_at) return -1;
+            if (!a.pinned_at && b.pinned_at) return 1;
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          });
+        });
+        showMinimalToast(isPinned ? "Campaign Pinned to Profile" : "Campaign Unpinned");
+      } else {
+        handleError(data.message || "Failed to toggle pin");
+      }
+    } catch (err: any) {
+      handleError(err.message || "Failed to toggle pin");
+    }
+  };
+
+  const handleRemoveBookmark = async (item: any) => {
+    try {
+      await toggleBookmark({
+        postId: item.post_id || undefined,
+        campaignId: item.campaign_id || undefined,
+      });
+      setSavedItems((prev) => prev.filter((b) => b.id !== item.id));
+      showMinimalToast("Removed from Saved");
+    } catch (err: any) {
+      handleError(err.message || "Failed to remove bookmark");
+    }
+  };
+
+  const handleEditPostSuccess = (updatedPost: any) => {
+    setEditingPost(null);
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === updatedPost.id
+          ? {
+              ...p,
+              content: updatedPost.content,
+              media_url: updatedPost.media_url,
+            }
+          : p
+      )
+    );
+    showMinimalToast("Post Updated");
+  };
+
+  const handleEditCampaignSuccess = (updatedCampaign: any) => {
+    setEditingCampaign(null);
+    setCampaigns((prev) =>
+      prev.map((c) =>
+        c.id === updatedCampaign.id
+          ? {
+              ...c,
+              title: updatedCampaign.title,
+              description: updatedCampaign.description,
+              goal_amount: updatedCampaign.goal_amount,
+              deadline: updatedCampaign.deadline,
+              media_url: updatedCampaign.media_url,
+            }
+          : c
+      )
+    );
+    showMinimalToast("Campaign Updated");
+  };
+
   const displayName =
-    name ||
+    localName ||
     (isOwnProfile ? localStorage.getItem("name") : null) ||
-    username ||
+    localUsername ||
     "User";
 
   const avatar = isOwnProfile
@@ -137,15 +390,18 @@ export function ProfileFeed({
     }
   };
 
-
   useEffect(() => {
     async function loadProfileContent() {
       setLoading(true);
       setError(null);
       setPosts([]);
       setCampaigns([]);
+      setSavedItems([]);
+      setDonations([]);
       setPostsPagination(null);
       setCampaignsPagination(null);
+      setSavedPagination(null);
+      setDonationsPagination(null);
       setUserId(null);
 
       try {
@@ -153,8 +409,11 @@ export function ProfileFeed({
           throw new Error("Username required");
         }
 
+        const token = localStorage.getItem("token");
+        const authHeader = token ? (token.startsWith("Bearer ") ? token : `Bearer ${token}`) : "";
+
         const profileRes = await fetch(
-          `${import.meta.env.VITE_BASE_API_URL}/users/${username}`,
+          `${import.meta.env.VITE_BASE_API_URL}/users/${username}`
         );
         const profileData = await profileRes.json();
         if (!profileRes.ok || !profileData.success) {
@@ -163,38 +422,63 @@ export function ProfileFeed({
 
         const nextUserId = profileData.data.id;
         setUserId(nextUserId);
-        if (!isOwnProfile && (profileData.data.avatar_url || profileData.data.avatar)) {
-          setAvatarState(profileData.data.avatar_url || profileData.data.avatar);
+        setUserProfileData(profileData.data);
+        const resolvedAvatar = profileData.data.avatar_url || profileData.data.avatarUrl || profileData.data.avatar || null;
+        if (resolvedAvatar) {
+          setAvatarState(resolvedAvatar);
+          if (isOwnProfile) {
+            localStorage.setItem("avatar", resolvedAvatar);
+            window.dispatchEvent(new Event("avatarChange"));
+          }
         }
 
-        const [postsRes, campaignsRes] = await Promise.all([
+        const fetchPromises: Promise<any>[] = [
           fetch(
-            `${import.meta.env.VITE_BASE_API_URL}/posts/user/${nextUserId}?page=1&limit=${POSTS_PAGE_SIZE}`,
+            `${import.meta.env.VITE_BASE_API_URL}/posts/user/${nextUserId}?page=1&limit=${POSTS_PAGE_SIZE}`
           ),
           fetch(
-            `${import.meta.env.VITE_BASE_API_URL}/campaigns/user/${nextUserId}?page=1&limit=${CAMPAIGNS_PAGE_SIZE}`,
+            `${import.meta.env.VITE_BASE_API_URL}/campaigns/user/${nextUserId}?page=1&limit=${CAMPAIGNS_PAGE_SIZE}`
           ),
-          fetch(
-            `${import.meta.env.VITE_BASE_API_URL}/follows/${nextUserId}/status`,
-          ),
-        ]);
+        ];
 
-        const postsData = await postsRes.json();
-        const campaignsData = await campaignsRes.json();
-
-        if (!postsRes.ok || !postsData.success) {
-          throw new Error(postsData.message || "Unable to load profile posts");
-        }
-        if (!campaignsRes.ok || !campaignsData.success) {
-          throw new Error(
-            campaignsData.message || "Unable to load profile campaigns",
+        if (isOwnProfile && authHeader) {
+          fetchPromises.push(
+            fetch(`${import.meta.env.VITE_BASE_API_URL}/bookmarks?page=1&limit=10`, {
+              headers: { Authorization: authHeader },
+            })
+          );
+          fetchPromises.push(
+            fetch(`${import.meta.env.VITE_BASE_API_URL}/users/me/donations?page=1&limit=10`, {
+              headers: { Authorization: authHeader },
+            })
           );
         }
 
-        setPosts(postsData.data.posts || []);
-        setCampaigns(campaignsData.data.campaigns || []);
-        setPostsPagination(postsData.data.pagination || null);
-        setCampaignsPagination(campaignsData.data.pagination || null);
+        const responses = await Promise.all(fetchPromises);
+        const postsData = await responses[0].json();
+        const campaignsData = await responses[1].json();
+
+        if (postsData.success) {
+          setPosts(postsData.data.posts || []);
+          setPostsPagination(postsData.data.pagination || null);
+        }
+        if (campaignsData.success) {
+          setCampaigns(campaignsData.data.campaigns || []);
+          setCampaignsPagination(campaignsData.data.pagination || null);
+        }
+
+        if (isOwnProfile && responses.length > 2) {
+          const bookmarksData = await responses[2].json();
+          if (bookmarksData.success) {
+            setSavedItems(bookmarksData.data.bookmarks || []);
+            setSavedPagination(bookmarksData.data.pagination || null);
+          }
+          const donationsData = await responses[3].json();
+          if (donationsData.success) {
+            setDonations(donationsData.data.donations || []);
+            setDonationsPagination(donationsData.data.pagination || null);
+          }
+        }
       } catch (err: any) {
         setError(err.message || "Failed to load profile content");
       } finally {
@@ -210,8 +494,11 @@ export function ProfileFeed({
       return;
     }
 
-    const currentPagination =
-      activeTab === "Posts" ? postsPagination : campaignsPagination;
+    let currentPagination = null;
+    if (activeTab === "Posts") currentPagination = postsPagination;
+    else if (activeTab === "Campaigns") currentPagination = campaignsPagination;
+    else if (activeTab === "Saved") currentPagination = savedPagination;
+    else if (activeTab === "Donations") currentPagination = donationsPagination;
 
     if (!hasMorePages(currentPagination)) {
       return;
@@ -221,42 +508,61 @@ export function ProfileFeed({
 
     try {
       const nextPage = getPaginationPage(currentPagination) + 1;
-      const pageSize =
-        activeTab === "Posts" ? POSTS_PAGE_SIZE : CAMPAIGNS_PAGE_SIZE;
-      const endpoint =
-        activeTab === "Posts"
-          ? `${import.meta.env.VITE_BASE_API_URL}/posts/user/${userId}?page=${nextPage}&limit=${pageSize}`
-          : `${import.meta.env.VITE_BASE_API_URL}/campaigns/user/${userId}?page=${nextPage}&limit=${pageSize}`;
-
-      const res = await fetch(endpoint);
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || "Unable to load more profile content");
-      }
-
-      const items =
-        activeTab === "Posts"
-          ? data.data.posts || []
-          : data.data.campaigns || [];
+      const token = localStorage.getItem("token");
+      const authHeader = token ? (token.startsWith("Bearer ") ? token : `Bearer ${token}`) : "";
 
       if (activeTab === "Posts") {
-        setPosts((prevPosts) => [...prevPosts, ...items]);
-        setPostsPagination(data.data.pagination || null);
-      } else {
-        setCampaigns((prevCampaigns) => [...prevCampaigns, ...items]);
-        setCampaignsPagination(data.data.pagination || null);
+        const res = await fetch(
+          `${import.meta.env.VITE_BASE_API_URL}/posts/user/${userId}?page=${nextPage}&limit=${POSTS_PAGE_SIZE}`
+        );
+        const data = await res.json();
+        if (data.success) {
+          setPosts((prev) => [...prev, ...(data.data.posts || [])]);
+          setPostsPagination(data.data.pagination || null);
+        }
+      } else if (activeTab === "Campaigns") {
+        const res = await fetch(
+          `${import.meta.env.VITE_BASE_API_URL}/campaigns/user/${userId}?page=${nextPage}&limit=${CAMPAIGNS_PAGE_SIZE}`
+        );
+        const data = await res.json();
+        if (data.success) {
+          setCampaigns((prev) => [...prev, ...(data.data.campaigns || [])]);
+          setCampaignsPagination(data.data.pagination || null);
+        }
+      } else if (activeTab === "Saved" && isOwnProfile) {
+        const res = await fetch(
+          `${import.meta.env.VITE_BASE_API_URL}/bookmarks?page=${nextPage}&limit=10`,
+          { headers: { Authorization: authHeader } }
+        );
+        const data = await res.json();
+        if (data.success) {
+          setSavedItems((prev) => [...prev, ...(data.data.bookmarks || [])]);
+          setSavedPagination(data.data.pagination || null);
+        }
+      } else if (activeTab === "Donations" && isOwnProfile) {
+        const res = await fetch(
+          `${import.meta.env.VITE_BASE_API_URL}/users/me/donations?page=${nextPage}&limit=10`,
+          { headers: { Authorization: authHeader } }
+        );
+        const data = await res.json();
+        if (data.success) {
+          setDonations((prev) => [...prev, ...(data.data.donations || [])]);
+          setDonationsPagination(data.data.pagination || null);
+        }
       }
     } catch (err: any) {
-      setError(err.message || "Failed to load more profile content");
+      setError(err.message || "Failed to load more content");
     } finally {
       setLoadingMore(false);
     }
   }, [
     activeTab,
     campaignsPagination,
+    donationsPagination,
+    isOwnProfile,
     loadingMore,
     postsPagination,
+    savedPagination,
     userId,
     username,
   ]);
@@ -267,12 +573,24 @@ export function ProfileFeed({
     };
   }, []);
 
-  const activeItems =
-    activeTab === "Posts" ? posts : activeTab === "Campaigns" ? campaigns : [];
-  const hasMoreItems =
-    activeTab === "Posts"
-      ? hasMorePages(postsPagination)
-      : hasMorePages(campaignsPagination);
+  const getActiveItems = () => {
+    if (activeTab === "Posts") return posts;
+    if (activeTab === "Campaigns") return campaigns;
+    if (activeTab === "Saved") return savedItems;
+    if (activeTab === "Donations") return donations;
+    return [];
+  };
+
+  const getActivePagination = () => {
+    if (activeTab === "Posts") return postsPagination;
+    if (activeTab === "Campaigns") return campaignsPagination;
+    if (activeTab === "Saved") return savedPagination;
+    if (activeTab === "Donations") return donationsPagination;
+    return null;
+  };
+
+  const activeItems = getActiveItems();
+  const hasMoreItems = hasMorePages(getActivePagination());
 
   const lastItemElementRef = useCallback(
     (node: HTMLDivElement | null) => {
@@ -293,21 +611,22 @@ export function ProfileFeed({
         {
           rootMargin: "200px",
           threshold: 0.1,
-        },
+        }
       );
 
       if (node) {
         observer.current.observe(node);
       }
     },
-    [hasMoreItems, loadMoreItems, loading, loadingMore],
+    [hasMoreItems, loadMoreItems, loading, loadingMore]
   );
+
   const activeTabTitle =
     sectionData.find((item) => item.key === activeTab)?.title || activeTab;
 
-  const getInitials = (name: string | undefined) => {
-    if (!name) return "U";
-    return name
+  const getInitials = (n: string | undefined) => {
+    if (!n) return "U";
+    return n
       .split(" ")
       .filter(Boolean)
       .slice(0, 2)
@@ -324,25 +643,16 @@ export function ProfileFeed({
 
   const getCampaignProgress = (item: any) => {
     const raised =
-      Number(
-        item.current_amount ?? item.raised_amount ?? item.amount_raised ?? 0,
-      ) || 0;
+      Number(item.current_amount ?? item.raised_amount ?? item.amount_raised ?? 0) || 0;
     const goal = Number(item.goal_amount ?? item.goal ?? 0) || 0;
     const progress = goal > 0 ? Math.min((raised / goal) * 100, 100) : 0;
     const deadline = item.deadline ? new Date(item.deadline) : null;
     const now = new Date();
     const daysLeft = deadline
-      ? Math.max(
-        0,
-        Math.ceil(
-          (deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-        ),
-      )
+      ? Math.max(0, Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
       : null;
     const statusLabel =
-      item.status === "completed" || raised >= goal
-        ? "Fully funded"
-        : "Funding";
+      item.status === "completed" || raised >= goal ? "Fully funded" : "Funding";
 
     return { raised, goal, progress, daysLeft, statusLabel };
   };
@@ -357,19 +667,29 @@ export function ProfileFeed({
     }
   };
 
-  const renderGridItem = (item: any, type: string) => {
-    if (type === "Posts") {
-      return (
-        <div
-          onClick={() => navigate(`/posts/${item.id}`)}
-          className="cursor-pointer rounded-3xl px-4 py-4 transition-colors hover:bg-slate-100"
-        >
-          <div className="space-y-3">
+  const renderPostItem = (item: any) => {
+    const isPinned = !!item.pinned_at;
+
+    return (
+      <div
+        onClick={() => navigate(`/posts/${item.id}`)}
+        className="cursor-pointer rounded-3xl px-4 py-4 transition-colors hover:bg-slate-100"
+      >
+        <div className="space-y-3">
+          {/* Pinned Indicator */}
+          {isPinned && (
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600">
+              <Pin className="w-3.5 h-3.5 fill-indigo-600" />
+              <span>Pinned Post</span>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center text-slate-500 text-sm">
-                {avatar ? (
+                {item.author_avatar || avatar ? (
                   <img
-                    src={avatar}
+                    src={item.author_avatar || avatar}
                     alt={item.author_name || displayName || "Profile"}
                     className="w-full h-full object-cover"
                   />
@@ -389,46 +709,113 @@ export function ProfileFeed({
                 </div>
               </div>
             </div>
-            <div className="space-y-2 text-slate-900">
-              {item.content && (
-                <p className="text-base leading-7">{item.content}</p>
-              )}
-              {item.media_url && (
-                <img
-                  src={item.media_url}
-                  alt="Post"
-                  className="w-full rounded-2xl object-cover"
-                />
+
+            {/* 3-dots Action Menu */}
+            <div className="relative" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveMenuId(activeMenuId === `post-${item.id}` ? null : `post-${item.id}`);
+                }}
+                className={`p-2 rounded-full transition-all duration-200 cursor-pointer ${
+                  activeMenuId === `post-${item.id}`
+                    ? "text-indigo-600 bg-indigo-50/80 scale-105"
+                    : "text-slate-400 hover:text-slate-900 hover:bg-slate-100"
+                }`}
+                aria-label="Post actions"
+              >
+                <MoreHorizontal className="w-5 h-5" />
+              </button>
+
+              {activeMenuId === `post-${item.id}` && (
+                <div className="absolute right-0 mt-2 w-48 bg-[#1a1a1b] border border-slate-700/50 rounded-xl shadow-2xl py-1.5 z-50 text-[#d7dadc] animate-in fade-in slide-in-from-top-2 duration-200">
+                  {isItemOwner(item.user_id) ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          setActiveMenuId(null);
+                          handleDeletePost(item.id);
+                        }}
+                        className="flex items-center space-x-2.5 w-full px-4 py-2 text-left text-[13px] font-medium text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4 text-rose-500" />
+                        <span>Delete</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setActiveMenuId(null);
+                          setEditingPost(item);
+                        }}
+                        className="flex items-center space-x-2.5 w-full px-4 py-2 text-left text-[13px] font-medium text-[#d7dadc] hover:bg-[#272729] transition-colors cursor-pointer"
+                      >
+                        <Edit2 className="w-4 h-4 text-[#d7dadc]" />
+                        <span>Edit Details</span>
+                      </button>
+                      <button
+                        onClick={() => handleTogglePinPost(item.id)}
+                        className="flex items-center space-x-2.5 w-full px-4 py-2 text-left text-[13px] font-medium text-[#d7dadc] hover:bg-[#272729] transition-colors cursor-pointer"
+                      >
+                        <Pin className="w-4 h-4 text-[#d7dadc]" />
+                        <span>{isPinned ? "Unpin from profile" : "Pin to profile"}</span>
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => {
+                          setActiveMenuId(null);
+                          handleSuccess("Content reported for review.");
+                        }}
+                        className="flex items-center space-x-2.5 w-full px-4 py-2 text-left text-[13px] font-medium text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                      >
+                        <AlertTriangle className="w-4 h-4 text-rose-500" />
+                        <span>Report Content</span>
+                      </button>
+                    </>
+                  )}
+                </div>
               )}
             </div>
           </div>
-          <div className="flex items-center justify-start gap-4 pt-3 text-slate-500">
-            <ProfileLikeButton
-              type="post"
-              id={item.id}
-              initialLikes={item.likes_count ?? item.likes ?? 0}
-            />
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/posts/${item.id}`);
-              }}
-              className="flex items-center gap-2 text-sm hover:text-slate-900 transition-colors cursor-pointer"
-            >
-              <MessageCircle className="w-4 h-4" />
-              <span>{item.comments_count ?? item.comments ?? 0}</span>
-            </button>
-            <button className="flex items-center gap-2 text-sm hover:text-slate-900 transition-colors">
-              <Share2 className="w-4 h-4" />
-              <span>Share</span>
-            </button>
+          <div className="space-y-2 text-slate-900">
+            {item.content && <p className="text-base leading-7">{item.content}</p>}
+            {item.media_url && (
+              <img
+                src={item.media_url}
+                alt="Post"
+                className="w-full rounded-2xl object-cover max-h-96"
+              />
+            )}
           </div>
         </div>
-      );
-    }
+        <div className="flex items-center justify-start gap-4 pt-3 text-slate-500">
+          <ProfileLikeButton
+            type="post"
+            id={item.id}
+            initialLikes={item.likes_count ?? item.likes ?? 0}
+          />
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/posts/${item.id}`);
+            }}
+            className="flex items-center gap-2 text-sm hover:text-slate-900 transition-colors cursor-pointer"
+          >
+            <MessageCircle className="w-4 h-4" />
+            <span>{item.comments_count ?? item.comments ?? 0}</span>
+          </button>
+          <button className="flex items-center gap-2 text-sm hover:text-slate-900 transition-colors">
+            <Share2 className="w-4 h-4" />
+            <span>Share</span>
+          </button>
+        </div>
+      </div>
+    );
+  };
 
-    const { raised, goal, progress, daysLeft, statusLabel } =
-      getCampaignProgress(item);
+  const renderCampaignItem = (item: any) => {
+    const isPinned = !!item.pinned_at;
+    const { raised, goal, progress, daysLeft, statusLabel } = getCampaignProgress(item);
 
     return (
       <div
@@ -436,45 +823,122 @@ export function ProfileFeed({
         className="cursor-pointer rounded-3xl px-4 py-4 transition-colors hover:bg-slate-100"
       >
         <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center text-slate-500 text-sm">
-              {avatar ? (
-                <img
-                  src={avatar}
-                  alt={item.author_name || displayName || "Profile"}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="font-semibold text-slate-700">
-                  {getInitials(item.author_name || displayName)}
-                </span>
-              )}
+          {/* Pinned Indicator */}
+          {isPinned && (
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600">
+              <Pin className="w-3.5 h-3.5 fill-indigo-600" />
+              <span>Pinned Campaign</span>
             </div>
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-900">
-                <span>{item.author_name || displayName}</span>
-                <span className="text-slate-400">·</span>
-                <span className="text-slate-500">
-                  {formatRelativeTime(item.created_at)}
-                </span>
+          )}
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center text-slate-500 text-sm">
+                {item.owner_avatar || avatar ? (
+                  <img
+                    src={item.owner_avatar || avatar}
+                    alt={item.owner_name || item.author_name || displayName || "Profile"}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="font-semibold text-slate-700">
+                    {getInitials(item.owner_name || item.author_name || displayName)}
+                  </span>
+                )}
               </div>
-              <div className="mt-1 inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-700">
-                Campaign
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-900">
+                  <span>{item.author_name || displayName}</span>
+                  <span className="text-slate-400">·</span>
+                  <span className="text-slate-500">
+                    {formatRelativeTime(item.created_at)}
+                  </span>
+                </div>
+                <div className="mt-1 inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                  Campaign
+                </div>
               </div>
+            </div>
+
+            {/* 3-dots Action Menu */}
+            <div className="relative" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveMenuId(
+                    activeMenuId === `campaign-${item.id}` ? null : `campaign-${item.id}`
+                  );
+                }}
+                className={`p-2 rounded-full transition-all duration-200 cursor-pointer ${
+                  activeMenuId === `campaign-${item.id}`
+                    ? "text-indigo-600 bg-indigo-50/80 scale-105"
+                    : "text-slate-400 hover:text-slate-900 hover:bg-slate-100"
+                }`}
+                aria-label="Campaign actions"
+              >
+                <MoreHorizontal className="w-5 h-5" />
+              </button>
+
+              {activeMenuId === `campaign-${item.id}` && (
+                <div className="absolute right-0 mt-2 w-48 bg-[#1a1a1b] border border-slate-700/50 rounded-xl shadow-2xl py-1.5 z-50 text-[#d7dadc] animate-in fade-in slide-in-from-top-2 duration-200">
+                  {isItemOwner(item.user_id) ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          setActiveMenuId(null);
+                          handleDeleteCampaign(item.id);
+                        }}
+                        className="flex items-center space-x-2.5 w-full px-4 py-2 text-left text-[13px] font-medium text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4 text-rose-500" />
+                        <span>Delete</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setActiveMenuId(null);
+                          setEditingCampaign(item);
+                        }}
+                        className="flex items-center space-x-2.5 w-full px-4 py-2 text-left text-[13px] font-medium text-[#d7dadc] hover:bg-[#272729] transition-colors cursor-pointer"
+                      >
+                        <Edit2 className="w-4 h-4 text-[#d7dadc]" />
+                        <span>Edit Details</span>
+                      </button>
+                      <button
+                        onClick={() => handleTogglePinCampaign(item.id)}
+                        className="flex items-center space-x-2.5 w-full px-4 py-2 text-left text-[13px] font-medium text-[#d7dadc] hover:bg-[#272729] transition-colors cursor-pointer"
+                      >
+                        <Pin className="w-4 h-4 text-[#d7dadc]" />
+                        <span>{isPinned ? "Unpin from profile" : "Pin to profile"}</span>
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => {
+                          setActiveMenuId(null);
+                          handleSuccess("Campaign reported for review.");
+                        }}
+                        className="flex items-center space-x-2.5 w-full px-4 py-2 text-left text-[13px] font-medium text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                      >
+                        <AlertTriangle className="w-4 h-4 text-rose-500" />
+                        <span>Report Content</span>
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
           <div className="space-y-2 text-slate-900">
             <h3 className="text-base font-semibold leading-7">
               {item.title || "Untitled campaign"}
             </h3>
-            {item.description && (
-              <p className="text-base leading-7">{item.description}</p>
-            )}
+            {item.description && <p className="text-base leading-7">{item.description}</p>}
             {item.media_url && (
               <img
                 src={item.media_url}
                 alt="Campaign"
-                className="w-full rounded-2xl object-cover"
+                className="w-full rounded-2xl object-cover max-h-96"
               />
             )}
             <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 space-y-3">
@@ -491,9 +955,7 @@ export function ProfileFeed({
                   <p className="text-sm font-semibold text-slate-900">
                     {Math.round(progress)}%
                   </p>
-                  <p className="text-xs text-slate-500">
-                    of {formatCurrency(goal)}
-                  </p>
+                  <p className="text-xs text-slate-500">of {formatCurrency(goal)}</p>
                 </div>
               </div>
               <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
@@ -511,9 +973,7 @@ export function ProfileFeed({
                       : `${daysLeft} days left`
                     : "No deadline"}
                 </span>
-                <span className="font-medium text-slate-700">
-                  {statusLabel}
-                </span>
+                <span className="font-medium text-slate-700">{statusLabel}</span>
               </div>
             </div>
           </div>
@@ -538,6 +998,129 @@ export function ProfileFeed({
             <Share2 className="w-4 h-4" />
             <span>Share</span>
           </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderSavedItem = (bookmark: any) => {
+    const isPost = !!bookmark.post;
+    const item = bookmark.post || bookmark.campaign;
+    if (!item) return null;
+
+    return (
+      <div key={bookmark.id} className="relative group">
+        <div className="flex items-center justify-between px-4 pt-2">
+          <span className="text-xs font-semibold text-slate-400 flex items-center gap-1">
+            <Bookmark className="w-3.5 h-3.5 fill-indigo-500 text-indigo-500" />
+            Saved on {new Date(bookmark.created_at).toLocaleDateString()}
+          </span>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRemoveBookmark(bookmark);
+            }}
+            className="text-xs text-rose-500 hover:text-rose-700 font-medium px-2 py-1 rounded-md hover:bg-rose-50 transition-colors"
+          >
+            Remove
+          </button>
+        </div>
+        {isPost ? renderPostItem(item) : renderCampaignItem(item)}
+      </div>
+    );
+  };
+
+  const renderDonationItem = (donation: any) => {
+    const campaign = donation.campaign;
+    const amountNum = parseFloat(donation.amount || 0);
+
+    return (
+      <div
+        key={donation.id}
+        onClick={() => campaign?.id && navigate(`/campaigns/${campaign.id}`)}
+        className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-xs transition-all hover:shadow-md cursor-pointer hover:border-indigo-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      >
+        <div className="flex items-start gap-4">
+          <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600 shrink-0">
+            <DollarSign className="w-6 h-6" />
+          </div>
+          <div>
+            <h4 className="text-base font-bold text-slate-900 line-clamp-1">
+              {campaign?.title || `Campaign #${donation.campaign_id}`}
+            </h4>
+            <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-slate-500 font-medium">
+              <span>Donated on {new Date(donation.created_at).toLocaleDateString()}</span>
+              <span>•</span>
+              <span
+                className={clsx(
+                  "px-2 py-0.5 rounded-full font-bold uppercase tracking-wider text-[10px]",
+                  donation.status === "completed"
+                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                    : donation.status === "refunded"
+                    ? "bg-rose-50 text-rose-700 border border-rose-200"
+                    : "bg-amber-50 text-amber-700 border border-amber-200"
+                )}
+              >
+                {donation.status}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="text-left sm:text-right shrink-0">
+          <p className="text-lg font-extrabold text-slate-900">
+            ${amountNum.toFixed(2)}
+          </p>
+          <span className="text-xs text-slate-400">Total Contribution</span>
+        </div>
+      </div>
+    );
+  };
+
+  const renderAboutTab = () => {
+    return (
+      <div className="rounded-3xl border border-slate-200/70 bg-white p-6 sm:p-8 space-y-6">
+        <div>
+          <h3 className="text-lg font-bold text-slate-900 mb-2">About {displayName}</h3>
+          <p className="text-slate-600 text-sm leading-relaxed">
+            {userProfileData?.bio || `${displayName} is a valued member of the FundME community.`}
+          </p>
+        </div>
+
+        <div className="border-t border-slate-100 pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div>
+            <span className="text-slate-400 font-medium">Username</span>
+            <p className="font-semibold text-slate-900">@{username}</p>
+          </div>
+          <div>
+            <span className="text-slate-400 font-medium">Account Type</span>
+            <p className="font-semibold text-slate-900 capitalize">
+              {userProfileData?.role || role || "Member"}
+            </p>
+          </div>
+          {userProfileData?.created_at && (
+            <div>
+              <span className="text-slate-400 font-medium">Joined</span>
+              <p className="font-semibold text-slate-900">
+                {new Date(userProfileData.created_at).toLocaleDateString(undefined, {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </p>
+            </div>
+          )}
+          <div>
+            <span className="text-slate-400 font-medium">KYC Status</span>
+            <p className="font-semibold text-slate-900 flex items-center gap-1">
+              {userProfileData?.kyc_verified ? (
+                <>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span className="text-emerald-700">Verified</span>
+                </>
+              ) : (
+                <span className="text-slate-500">Unverified</span>
+              )}
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -585,26 +1168,38 @@ export function ProfileFeed({
             onChange={handleAvatarFileChange}
           />
         </div>
-        <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 leading-tight">
-            {displayName}
-          </h1>
-          {username && (
-            <p className="text-md font-bold text-slate-800 mt-1">@{username}</p>
+        <div className="flex items-center gap-3">
+          <div>
+            <h1 className="text-3xl font-extrabold text-slate-900 leading-tight">
+              {displayName}
+            </h1>
+            {localUsername && (
+              <p className="text-md font-bold text-slate-800 mt-1">@{localUsername}</p>
+            )}
+          </div>
+          {isOwnProfile && (
+            <button
+              onClick={() => setIsEditProfileOpen(true)}
+              className="ml-2 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200/70 text-slate-700 text-sm font-semibold transition-colors cursor-pointer xl:hidden"
+            >
+              <Edit2 className="w-3.5 h-3.5" />
+              <span>Edit</span>
+            </button>
           )}
         </div>
       </div>
 
+      {/* Tabs */}
       <div className="flex items-center space-x-2 px-4 mb-4 overflow-x-auto [&::-webkit-scrollbar]:hidden">
         {sectionData.map((tab) => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => handleTabChange(tab.key)}
             className={clsx(
               "px-4 py-2 cursor-pointer rounded-full text-[14px] font-semibold transition-colors whitespace-nowrap",
               activeTab === tab.key
                 ? "bg-slate-200/70 text-slate-900"
-                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
             )}
           >
             {tab.key}
@@ -612,24 +1207,21 @@ export function ProfileFeed({
         ))}
       </div>
 
+      {/* Action Header */}
       <div className="flex items-center space-x-3 px-4 pb-4 border-b border-slate-200 mb-6">
         {isOwnProfile && (activeTab === "Posts" || activeTab === "Campaigns") && (
           <button
             onClick={() =>
-              activeTab === "Posts"
-                ? setIsThreadModalOpen(true)
-                : handleCampaignClick()
+              activeTab === "Posts" ? setIsThreadModalOpen(true) : handleCampaignClick()
             }
             className="flex items-center space-x-1.5 px-4 py-2 rounded-full border border-slate-300 cursor-pointer hover:bg-slate-200 transition-colors"
           >
             <Plus className="w-4 h-4 text-slate-700" />
             <span className="text-[14px] font-semibold text-slate-700">
-              {activeTab === "Posts" ? "Create Post" :
-                "Create Campaign"}
+              {activeTab === "Posts" ? "Create Post" : "Create Campaign"}
             </span>
           </button>
         )}
-        <button className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-600"></button>
       </div>
 
       {loading ? (
@@ -638,33 +1230,63 @@ export function ProfileFeed({
         </div>
       ) : error ? (
         <div className="px-4 py-24 text-center text-rose-500">{error}</div>
+      ) : activeTab === "About" ? (
+        <div className="px-4">{renderAboutTab()}</div>
       ) : (
         <div className="px-4">
           <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">
-                {activeTabTitle}
-              </h2>
-            </div>
+            <h2 className="text-xl font-bold text-slate-900">{activeTabTitle}</h2>
           </div>
 
           {activeItems.length === 0 ? (
             <div className="rounded-3xl border border-slate-200/70 bg-white p-12 text-center text-slate-500">
-              No {activeTab.toLowerCase()} yet.
+              No {activeTab.toLowerCase()} found.
             </div>
           ) : (
             <div className="flex flex-col gap-4 pr-2">
-              {activeItems.map((item, index) => (
-                <div
-                  ref={
-                    index === activeItems.length - 1 ? lastItemElementRef : null
-                  }
-                  key={`${activeTab}-${index}`}
-                  className="border-b border-slate-200/70 pb-4 last:border-b-0"
-                >
-                  {renderGridItem(item, activeTab)}
-                </div>
-              ))}
+              {activeTab === "Posts" &&
+                posts.map((item, index) => (
+                  <div
+                    ref={index === posts.length - 1 ? lastItemElementRef : null}
+                    key={`post-${item.id}`}
+                    className="border-b border-slate-200/70 pb-4 last:border-b-0"
+                  >
+                    {renderPostItem(item)}
+                  </div>
+                ))}
+
+              {activeTab === "Campaigns" &&
+                campaigns.map((item, index) => (
+                  <div
+                    ref={index === campaigns.length - 1 ? lastItemElementRef : null}
+                    key={`campaign-${item.id}`}
+                    className="border-b border-slate-200/70 pb-4 last:border-b-0"
+                  >
+                    {renderCampaignItem(item)}
+                  </div>
+                ))}
+
+              {activeTab === "Saved" &&
+                savedItems.map((item, index) => (
+                  <div
+                    ref={index === savedItems.length - 1 ? lastItemElementRef : null}
+                    key={`saved-${item.id}`}
+                    className="border-b border-slate-200/70 pb-4 last:border-b-0"
+                  >
+                    {renderSavedItem(item)}
+                  </div>
+                ))}
+
+              {activeTab === "Donations" &&
+                donations.map((item, index) => (
+                  <div
+                    ref={index === donations.length - 1 ? lastItemElementRef : null}
+                    key={`donation-${item.id}`}
+                  >
+                    {renderDonationItem(item)}
+                  </div>
+                ))}
+
               {loadingMore && (
                 <div className="py-4 text-center text-sm text-slate-500">
                   Loading more...
@@ -682,19 +1304,60 @@ export function ProfileFeed({
           onClose={() => setIsThreadModalOpen(false)}
           onSuccess={(newPost: any) => {
             setIsThreadModalOpen(false);
-            // Prepend the new post to the posts list
             setPosts((prevPosts) => [
               {
                 ...newPost,
                 created_at:
-                  newPost?.created_at ||
-                  newPost?.createdAt ||
-                  new Date().toISOString(),
+                  newPost?.created_at || newPost?.createdAt || new Date().toISOString(),
                 author_name: localStorage.getItem("name"),
                 author_role: localStorage.getItem("role"),
               },
               ...prevPosts,
             ]);
+          }}
+        />
+      )}
+
+      {/* Edit Post Modal */}
+      {editingPost && (
+        <CreateThreadModal
+          isOpen={true}
+          onClose={() => setEditingPost(null)}
+          editMode={true}
+          editPostId={String(editingPost.id)}
+          initialContent={editingPost.content || ""}
+          initialImage={editingPost.media_url}
+          onSuccess={handleEditPostSuccess}
+        />
+      )}
+
+      {/* Edit Campaign Modal */}
+      {editingCampaign && (
+        <CreateCampaignModal
+          editMode={true}
+          editCampaignId={String(editingCampaign.id)}
+          initialData={{
+            title: editingCampaign.title || "",
+            description: editingCampaign.description || "",
+            goal_amount: editingCampaign.goal_amount || editingCampaign.goal || 0,
+            deadline: editingCampaign.deadline || "",
+            media_url: editingCampaign.media_url || "",
+          }}
+          onClose={() => setEditingCampaign(null)}
+          onSuccess={handleEditCampaignSuccess}
+        />
+      )}
+
+      {/* Edit Profile Modal — for mobile (xl:hidden shows Edit button above) */}
+      {isOwnProfile && (
+        <EditProfileModal
+          isOpen={isEditProfileOpen}
+          onClose={() => setIsEditProfileOpen(false)}
+          currentName={localName || displayName}
+          currentUsername={localUsername || ""}
+          onSuccess={(data) => {
+            setLocalName(data.name);
+            setLocalUsername(data.username);
           }}
         />
       )}

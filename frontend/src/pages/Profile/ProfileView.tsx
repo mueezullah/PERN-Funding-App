@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ProfileFeed } from "./ProfileFeed";
 import { ProfileRightSidebar } from "./RightCard";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { fetchUserProfileStats } from "../../features/profile/profileAPI";
 
 type ProfileStats = {
@@ -19,6 +19,7 @@ type ProfileStats = {
 export function ProfileView() {
   const { username: paramUsername } = useParams<{ username: string }>();
   const location = useLocation();
+  const navigate = useNavigate();
   const stateName = (location.state as { name?: string } | null)?.name;
   const loggedInUsername = localStorage.getItem("username");
   const isOwnProfile = !paramUsername || paramUsername === loggedInUsername;
@@ -43,6 +44,18 @@ export function ProfileView() {
     loadProfileStats();
   }, [username]);
 
+  const handleProfileUpdate = (data: { name: string; username: string }) => {
+    // If username changed, navigate to the new profile URL
+    if (data.username !== username) {
+      navigate(`/user/${data.username}`, { replace: true });
+    } else {
+      // Just refresh stats in place
+      setProfileStats((prev) =>
+        prev ? { ...prev, name: data.name, username: data.username } : prev
+      );
+    }
+  };
+
   return (
     <div className="w-full max-w-275 mx-auto flex gap-8">
       <div className="flex-1">
@@ -59,6 +72,7 @@ export function ProfileView() {
           userId={profileStats?.id}
           profileStats={profileStats}
           isOwnProfile={isOwnProfile}
+          onProfileUpdate={handleProfileUpdate}
         />
       </div>
     </div>

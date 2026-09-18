@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Image as ImageIcon, Plus, Edit } from "lucide-react";
+import { EditProfileModal } from "../../components/EditProfileModal";
 import { FollowButton } from "../../components/FollowButton";
 import { FollowListModal } from "../../components/FollowListModal";
 
@@ -11,6 +12,9 @@ type ProfileStats = {
   totalContributed: number;
   createdAt?: string;
   role?: string;
+  avatarUrl?: string;
+  avatar_url?: string;
+  avatar?: string;
 };
 
 const formatNameWithRole = (name: string, role?: string) => {
@@ -25,21 +29,33 @@ export function ProfileRightSidebar({
   userId: propUserId,
   profileStats,
   isOwnProfile = true,
+  onProfileUpdate,
 }: {
   name?: string;
   username?: string;
   userId?: number;
   profileStats?: ProfileStats | null;
   isOwnProfile?: boolean;
+  onProfileUpdate?: (data: { name: string; username: string }) => void;
 }) {
   const [followersCount, setFollowersCount] = useState<number>(0);
   const [followingCount, setFollowingCount] = useState<number>(0);
   const [modalType, setModalType] = useState<"followers" | "following" | null>(null);
   const [resolvedUserId, setResolvedUserId] = useState<number | null>(propUserId || profileStats?.id || null);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [displayNameState, setDisplayNameState] = useState(name || "User");
+
+  const rawAvatar = profileStats?.avatarUrl || profileStats?.avatar_url || profileStats?.avatar;
+  const avatar = isOwnProfile ? (rawAvatar || localStorage.getItem("avatar")) : rawAvatar;
+
+  // Keep displayNameState in sync with prop changes
+  useEffect(() => {
+    setDisplayNameState(name || "User");
+  }, [name]);
 
   const displayName = isOwnProfile
-    ? formatNameWithRole(name || "User", profileStats?.role)
-    : (name || "User");
+    ? formatNameWithRole(displayNameState, profileStats?.role)
+    : (displayNameState);
   const posts = profileStats?.posts ?? 0;
   const campaigns = profileStats?.campaigns ?? 0;
   const backedProjects = profileStats?.backedProjects ?? 0;
@@ -116,7 +132,22 @@ export function ProfileRightSidebar({
         </div>
 
         {/* Profile Info Card Content */}
-        <div className="p-5 flex flex-col">
+        <div className="p-5 pt-0 flex flex-col">
+          {/* Avatar overlapping banner */}
+          <div className="-mt-12 mb-3 relative z-10 w-20 h-20 rounded-full border-4 border-white shadow-md overflow-hidden bg-slate-100 flex items-center justify-center">
+            {avatar ? (
+              <img
+                src={avatar}
+                alt={displayName}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-2xl">
+                {(name || displayName).charAt(0).toUpperCase()}
+              </div>
+            )}
+          </div>
+
           <h2 className="text-[20px] font-bold text-slate-900">
             {displayName}
           </h2>
@@ -124,7 +155,10 @@ export function ProfileRightSidebar({
           {/* Action Buttons Row */}
           <div className="flex flex-wrap items-center gap-3 mb-6 mt-4">
             {isOwnProfile && (
-              <button className="flex items-center space-x-2 w-fit bg-slate-100 hover:bg-slate-200/70 text-slate-900 font-semibold text-[14px] px-4 py-1.5 rounded-full transition-colors cursor-pointer">
+              <button
+                onClick={() => setIsEditProfileOpen(true)}
+                className="flex items-center space-x-2 w-fit bg-slate-100 hover:bg-slate-200/70 text-slate-900 font-semibold text-[14px] px-4 py-1.5 rounded-full transition-colors cursor-pointer"
+              >
                 <Edit className="w-4 h-4" />
                 <span>Update</span>
               </button>
@@ -226,6 +260,20 @@ export function ProfileRightSidebar({
           type={modalType}
           userId={resolvedUserId}
           onClose={() => setModalType(null)}
+        />
+      )}
+
+      {/* Edit Profile Modal */}
+      {isOwnProfile && (
+        <EditProfileModal
+          isOpen={isEditProfileOpen}
+          onClose={() => setIsEditProfileOpen(false)}
+          currentName={displayNameState}
+          currentUsername={username || ""}
+          onSuccess={(updatedData) => {
+            setDisplayNameState(updatedData.name);
+            onProfileUpdate?.(updatedData);
+          }}
         />
       )}
     </div>
