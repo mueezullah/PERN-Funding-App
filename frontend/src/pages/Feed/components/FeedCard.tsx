@@ -12,14 +12,15 @@ import {
   AlertTriangle,
   UserPlus,
   EyeOff,
-  MessageCircle,
 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { handleSuccess, handleError } from "../../../utils";
 import { ImageWithFallback } from "../../../components/ImageWithFallback";
-import DonationModal from "../../../components/DonationModal";
 import { useNavigate } from "react-router-dom";
 import { useLike } from "../../../features/likes/useLike";
+import { toggleBookmark } from "../../../features/bookmarks/bookmarksAPI";
+import { showMinimalToast } from "../../../components/MinimalToast";
+import { DonationModal } from "../../../components/DonationModal";
 
 interface FeedCardProps {
   id: string;
@@ -67,12 +68,27 @@ export function FeedCard({
   );
 
   const [isDonationOpen, setIsDonationOpen] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const navigate = useNavigate();
 
   const numericId = parseInt(id.replace(/\D/g, ""), 10) || 0;
   const targetType = type === "thread" ? "post" : type;
   const { liked, likesCount, loading, toggleLike } = useLike(targetType, numericId);
   const displayLikes = loading ? (stats.likes ?? likesCount) : likesCount;
+
+  const handleBookmarkToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const res = await toggleBookmark({
+        postId: targetType === "post" ? numericId : undefined,
+        campaignId: targetType === "campaign" ? numericId : undefined,
+      });
+      setIsSaved(res.bookmarked);
+      showMinimalToast(res.bookmarked ? "Saved to Bookmarks" : "Removed from Bookmarks");
+    } catch (err: any) {
+      handleError(err.message || "Failed to update bookmark");
+    }
+  };
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -168,10 +184,6 @@ export function FeedCard({
       case "report":
         handleSuccess("Thank you! This content has been reported for review.");
         // TODO: Call API endpoint POST /api/reports with content details
-        break;
-
-      case "message":
-        navigate(`/chats/${user.username}`, { state: { name: user.name } });
         break;
 
       case "follow":
@@ -309,14 +321,6 @@ export function FeedCard({
                   </button>
 
                   <button
-                    onClick={() => handleAction("message")}
-                    className="flex cursor-pointer items-center space-x-2.5 w-full px-4 py-2.5 text-left text-[14px] font-medium text-[#d7dadc] hover:bg-[#272729] transition-colors"
-                  >
-                    <MessageCircle className="w-4 h-4 text-[#d7dadc]" />
-                    <span>Message</span>
-                  </button>
-
-                  <button
                     onClick={() => handleAction("follow")}
                     className="flex cursor-pointer items-center space-x-2.5 w-full px-4 py-2.5 text-left text-[14px] font-medium text-[#d7dadc] hover:bg-[#272729] transition-colors"
                   >
@@ -434,10 +438,15 @@ export function FeedCard({
             <Share2 className="w-4.5 h-4.5 sm:w-5 sm:h-5 transition-transform group-active:scale-90" />
           </button>
           <button
-            onClick={(e) => e.stopPropagation()}
-            className="flex items-center space-x-2 text-slate-500 hover:text-amber-500 transition-colors group px-2 py-1.5 rounded-full hover:bg-amber-50"
+            onClick={handleBookmarkToggle}
+            className={`flex items-center space-x-2 transition-colors group px-2 py-1.5 rounded-full ${
+              isSaved
+                ? "text-amber-500 bg-amber-50"
+                : "text-slate-500 hover:text-amber-500 hover:bg-amber-50"
+            }`}
+            aria-label="Bookmark"
           >
-            <Bookmark className="w-4.5 h-4.5 sm:w-5 sm:h-5 transition-transform group-active:scale-90" />
+            <Bookmark className={`w-4.5 h-4.5 sm:w-5 sm:h-5 transition-transform group-active:scale-90 ${isSaved ? "fill-current" : ""}`} />
           </button>
         </div>
 

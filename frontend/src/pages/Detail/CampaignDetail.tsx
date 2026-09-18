@@ -1,14 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Clock, Heart } from "lucide-react";
+import {
+  ArrowLeft,
+  Clock,
+  Heart,
+  MoreHorizontal,
+  Trash2,
+  Edit2,
+  Pin,
+  AlertTriangle,
+  UserPlus,
+} from "lucide-react";
 import { Navbar } from "../Feed/components/Navbar";
 import { Sidebar } from "../Feed/components/Sidebar";
 import { fetchCampaignById } from "../../features/creator/creatorAPI";
-import { formatRelativeTime } from "../../utils";
+import { formatRelativeTime, handleError, handleSuccess } from "../../utils";
 import { ImageWithFallback } from "../../components/ImageWithFallback";
 import { DonationModal } from "../../components/DonationModal";
 import { CommentSection } from "./CommentSection";
 import { useLike } from "../../features/likes/useLike";
+import CreateCampaignModal from "../CreatorDashboard/CreateCampaignModal";
+import { showMinimalToast } from "../../components/MinimalToast";
 
 export default function CampaignDetail() {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +31,23 @@ export default function CampaignDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDonationOpen, setIsDonationOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    if (isMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isMenuOpen]);
 
   useEffect(() => {
     const loadCampaign = async () => {
@@ -91,6 +120,37 @@ export default function CampaignDetail() {
   const isCampaignCompleted = campaign.status === "completed" || raised >= goal;
   const isDonateDisabled = isCampaignEnded || isCampaignCompleted;
 
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this campaign?")) return;
+    setIsMenuOpen(false);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_BASE_API_URL}/campaigns/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showMinimalToast("Campaign Deleted");
+        navigate("/feed");
+      } else {
+        handleError(data.message || "Failed to delete campaign");
+      }
+    } catch (err: any) {
+      handleError(err.message || "Failed to delete campaign");
+    }
+  };
+
+  const handleEditSuccess = (updatedCampaign: any) => {
+    setIsEditModalOpen(false);
+    setCampaign((prev: any) => ({
+      ...prev,
+      ...updatedCampaign,
+    }));
+    showMinimalToast("Campaign Updated");
+  };
+
   return (
     <div className="h-screen bg-slate-50 flex flex-col font-sans text-slate-900 overflow-hidden">
       <Navbar />
@@ -113,23 +173,126 @@ export default function CampaignDetail() {
             {/* Campaign details card */}
             <article className="bg-white rounded-3xl shadow-sm border border-slate-200/60 p-6 sm:p-8 text-left">
               
-              {/* Creator details */}
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white font-bold text-lg border border-slate-100 shadow-sm">
-                  {campaign.owner_name ? campaign.owner_name.charAt(0).toUpperCase() : "C"}
-                </div>
-                <div>
-                  <div className="flex items-center space-x-1.5">
-                    <h3 className="font-bold text-[16px] text-slate-900">
-                      {campaign.owner_name}
-                    </h3>
-                    <span className="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase tracking-wider">
-                      Campaign
-                    </span>
+              {/* Creator details & 3-dots menu */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <div
+                    className="cursor-pointer"
+                    onClick={() => {
+                      if (campaign.owner_username) {
+                        navigate(`/user/${campaign.owner_username}`, { state: { name: campaign.owner_name } });
+                      }
+                    }}
+                  >
+                    {campaign.owner_avatar || campaign.user?.avatar_url ? (
+                      <img
+                        src={campaign.owner_avatar || campaign.user?.avatar_url}
+                        alt={campaign.owner_name || "Creator"}
+                        className="w-12 h-12 rounded-full object-cover border border-slate-100 shadow-sm"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white font-bold text-lg border border-slate-100 shadow-sm">
+                        {campaign.owner_name ? campaign.owner_name.charAt(0).toUpperCase() : "C"}
+                      </div>
+                    )}
                   </div>
-                  <p className="text-[13px] text-slate-500 font-medium">
-                    {campaign.owner_username ? `@${campaign.owner_username}` : "Fundraiser"} • {formatRelativeTime(campaign.created_at)}
-                  </p>
+                  <div>
+                    <div className="flex items-center space-x-1.5">
+                      <h3
+                        className="font-bold text-[16px] text-slate-900 cursor-pointer hover:underline"
+                        onClick={() => {
+                          if (campaign.owner_username) {
+                            navigate(`/user/${campaign.owner_username}`, { state: { name: campaign.owner_name } });
+                          }
+                        }}
+                      >
+                        {campaign.owner_name}
+                      </h3>
+                      <span className="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase tracking-wider">
+                        Campaign
+                      </span>
+                    </div>
+                    <p className="text-[13px] text-slate-500 font-medium">
+                      {campaign.owner_username ? `@${campaign.owner_username}` : "Fundraiser"} • {formatRelativeTime(campaign.created_at)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 3-dots Action Menu */}
+                <div className="relative" ref={menuRef}>
+                  <button
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    className={`cursor-pointer p-2 rounded-full transition-all duration-200 ${
+                      isMenuOpen
+                        ? "text-indigo-600 bg-indigo-50/80 scale-105"
+                        : "text-slate-400 hover:text-slate-900 hover:bg-slate-50"
+                    }`}
+                    aria-label="Campaign actions"
+                  >
+                    <MoreHorizontal className="w-5 h-5" />
+                  </button>
+
+                  {isMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-52 bg-[#1a1a1b] border border-slate-700/50 rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.5)] py-2 z-50 text-[#d7dadc] animate-in fade-in slide-in-from-top-3 duration-250">
+                      {isOwner ? (
+                        <>
+                          <button
+                            onClick={handleDelete}
+                            className="flex cursor-pointer items-center space-x-2.5 w-full px-4 py-2.5 text-left text-[14px] font-medium text-rose-500 hover:bg-rose-500/10 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4 text-rose-500" />
+                            <span>Delete</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              setIsMenuOpen(false);
+                              setIsEditModalOpen(true);
+                            }}
+                            className="flex cursor-pointer items-center space-x-2.5 w-full px-4 py-2.5 text-left text-[14px] font-medium text-[#d7dadc] hover:bg-[#272729] transition-colors"
+                          >
+                            <Edit2 className="w-4 h-4 text-[#d7dadc]" />
+                            <span>Edit Details</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              setIsMenuOpen(false);
+                              handleSuccess("Campaign pinned to your profile!");
+                            }}
+                            className="flex cursor-pointer items-center space-x-2.5 w-full px-4 py-2.5 text-left text-[14px] font-medium text-[#d7dadc] hover:bg-[#272729] transition-colors"
+                          >
+                            <Pin className="w-4 h-4 text-[#d7dadc]" />
+                            <span>Pin to profile</span>
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => {
+                              setIsMenuOpen(false);
+                              handleSuccess("Thank you! This content has been reported for review.");
+                            }}
+                            className="flex cursor-pointer items-center space-x-2.5 w-full px-4 py-2.5 text-left text-[14px] font-medium text-rose-500 hover:bg-rose-500/10 transition-colors"
+                          >
+                            <AlertTriangle className="w-4 h-4 text-rose-500" />
+                            <span>Report Content</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              setIsMenuOpen(false);
+                              handleSuccess(`You are now following ${campaign.owner_name}!`);
+                            }}
+                            className="flex cursor-pointer items-center space-x-2.5 w-full px-4 py-2.5 text-left text-[14px] font-medium text-[#d7dadc] hover:bg-[#272729] transition-colors"
+                          >
+                            <UserPlus className="w-4 h-4 text-[#d7dadc]" />
+                            <span>Follow Owner</span>
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -243,6 +406,23 @@ export default function CampaignDetail() {
               goal={goal}
               raised={raised}
             />
+
+            {/* Edit Campaign Modal */}
+            {isEditModalOpen && (
+              <CreateCampaignModal
+                editMode={true}
+                editCampaignId={id}
+                initialData={{
+                  title: campaign.title || "",
+                  description: campaign.description || "",
+                  goal_amount: campaign.goal_amount || 0,
+                  deadline: campaign.deadline || "",
+                  media_url: campaign.media_url || "",
+                }}
+                onClose={() => setIsEditModalOpen(false)}
+                onSuccess={handleEditSuccess}
+              />
+            )}
 
           </div>
         </div>
