@@ -31,6 +31,18 @@ export function Feed() {
 
   const role = localStorage.getItem("role");
 
+  const [currentUserAvatar, setCurrentUserAvatar] = useState(
+    localStorage.getItem("avatar") || ""
+  );
+
+  useEffect(() => {
+    const handleAvatarUpdate = () => {
+      setCurrentUserAvatar(localStorage.getItem("avatar") || "");
+    };
+    window.addEventListener("avatarChange", handleAvatarUpdate);
+    return () => window.removeEventListener("avatarChange", handleAvatarUpdate);
+  }, []);
+
   const handleCampaignClick = () => {
     if (role === "fundraiser" || role === "admin") {
       navigate("/create-campaign");
@@ -88,7 +100,7 @@ export function Feed() {
         id: campaign.user_id,
         name: campaign.owner_name,
         username: campaign.owner_username,
-        avatar: "",
+        avatar: campaign.owner_avatar || campaign.user?.avatar_url || campaign.avatar || "",
         role: "Fundraiser",
         time: formatRelativeTime(createdAt),
       },
@@ -119,7 +131,7 @@ export function Feed() {
         id: thread.user_id,
         name: thread.author_name,
         username: thread.author_username,
-        avatar: "",
+        avatar: thread.author_avatar || thread.user?.avatar_url || thread.avatar || "",
         role: thread.author_role,
         time: formatRelativeTime(createdAt),
       },
@@ -148,9 +160,17 @@ export function Feed() {
       {/* Create Post / Thread Area */}
       <div className="bg-white rounded-3xl shadow-sm border border-slate-200/60 p-5 mb-8">
         <div className="flex items-center space-x-4 mb-4">
-          <div className="w-11 h-11 rounded-full bg-linear-to-br from-indigo-400 to-violet-500 shrink-0 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-            {localStorage.getItem("name")?.charAt(0)?.toUpperCase() || "U"}
-          </div>
+          {currentUserAvatar ? (
+            <img
+              src={currentUserAvatar}
+              alt={localStorage.getItem("name") || "Profile"}
+              className="w-11 h-11 rounded-full object-cover shrink-0 border border-slate-100 shadow-sm"
+            />
+          ) : (
+            <div className="w-11 h-11 rounded-full bg-linear-to-br from-indigo-400 to-violet-500 shrink-0 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+              {localStorage.getItem("name")?.charAt(0)?.toUpperCase() || "U"}
+            </div>
+          )}
           <button
             onClick={handlePostClick}
             className="flex-1 cursor-text text-left text-slate-400 font-medium text-[15px] hover:text-slate-600 transition-colors"

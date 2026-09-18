@@ -220,9 +220,17 @@ export function CreateThreadModal({
         <div className="px-5 pt-4 pb-2">
           {/* User Row */}
           <div className="flex items-start space-x-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-linear-to-br from-indigo-400 to-violet-500 shrink-0 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-              {name.charAt(0).toUpperCase()}
-            </div>
+            {localStorage.getItem("avatar") ? (
+              <img
+                src={localStorage.getItem("avatar")!}
+                alt={name || "User"}
+                className="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-100 shadow-sm"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-linear-to-br from-indigo-400 to-violet-500 shrink-0 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                {name.charAt(0).toUpperCase()}
+              </div>
+            )}
             <div className="flex-1">
               <p className="text-[13px] font-bold text-slate-900 mb-2">
                 {name}

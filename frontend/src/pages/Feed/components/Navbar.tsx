@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { CreateThreadModal } from "./CreateThreadModal";
+import { SearchBar } from "./SearchBar";
 import { Link } from "react-router-dom";
 
 export function Navbar({
@@ -31,6 +32,7 @@ export function Navbar({
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isCreateDropdownOpen, setIsCreateDropdownOpen] = useState(false);
   const [isThreadModalOpen, setIsThreadModalOpen] = useState(false);
@@ -143,15 +145,14 @@ export function Navbar({
         </div>
 
         <div className="flex-1 flex justify-center px-4">
-          <div className="relative items-center w-full max-w-xl hidden sm:flex group">
-            <input
-              type="text"
-              placeholder="Search campaigns, posts, and people..."
-              className="w-full h-10 pl-11 pr-4 bg-slate-100/80 rounded-full text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 border border-transparent focus:border-indigo-500/30 focus:bg-white transition-all shadow-inner"
-            />
-            <Search className="absolute left-4 w-4 h-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" />
+          <div className="w-full max-w-xl hidden sm:flex justify-center">
+            <SearchBar />
           </div>
-          <button className="sm:hidden p-2 text-slate-600 ml-auto">
+          <button
+            className="sm:hidden p-2 text-slate-600 hover:text-indigo-600 ml-auto transition-colors"
+            onClick={() => setIsMobileSearchOpen(true)}
+            aria-label="Open search"
+          >
             <Search className="w-5 h-5" />
           </button>
         </div>
@@ -302,6 +303,18 @@ export function Navbar({
             <div className="flex-1 overflow-y-auto bg-slate-50/50">
               <Sidebar />
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Search Overlay Modal */}
+      {isMobileSearchOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-60 p-4 sm:hidden flex flex-col items-center">
+          <div className="w-full mt-2">
+            <SearchBar
+              isMobileOpen={true}
+              onCloseMobile={() => setIsMobileSearchOpen(false)}
+            />
           </div>
         </div>
       )}
