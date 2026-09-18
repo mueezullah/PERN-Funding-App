@@ -1,4 +1,5 @@
 import prisma from "../../config/prisma.js";
+import { getPresignedGetUrl } from "../../utils/s3.service.js";
 
 export const toggleFollow = async (followerId, followingId) => {
   const fId = parseInt(followerId, 10);
@@ -61,18 +62,26 @@ export const getFollowers = async (userId) => {
     where: { following_id: parseInt(userId, 10) },
     include: {
       follower: {
-        select: { id: true, name: true, email: true },
+        select: { id: true, name: true, username: true, email: true, avatar_url: true },
       },
     },
     orderBy: { created_at: "desc" },
   });
 
-  return follows.map((f) => ({
-    id: f.follower.id,
-    name: f.follower.name,
-    email: f.follower.email,
-    created_at: f.created_at,
-  }));
+  return await Promise.all(
+    follows.map(async (f) => {
+      const presignedAvatar = await getPresignedGetUrl(f.follower.avatar_url);
+      return {
+        id: f.follower.id,
+        name: f.follower.name,
+        username: f.follower.username,
+        email: f.follower.email,
+        avatar_url: presignedAvatar,
+        profile_picture: presignedAvatar,
+        created_at: f.created_at,
+      };
+    })
+  );
 };
 
 export const getFollowing = async (userId) => {
@@ -80,16 +89,24 @@ export const getFollowing = async (userId) => {
     where: { follower_id: parseInt(userId, 10) },
     include: {
       following: {
-        select: { id: true, name: true, email: true },
+        select: { id: true, name: true, username: true, email: true, avatar_url: true },
       },
     },
     orderBy: { created_at: "desc" },
   });
 
-  return follows.map((f) => ({
-    id: f.following.id,
-    name: f.following.name,
-    email: f.following.email,
-    created_at: f.created_at,
-  }));
+  return await Promise.all(
+    follows.map(async (f) => {
+      const presignedAvatar = await getPresignedGetUrl(f.following.avatar_url);
+      return {
+        id: f.following.id,
+        name: f.following.name,
+        username: f.following.username,
+        email: f.following.email,
+        avatar_url: presignedAvatar,
+        profile_picture: presignedAvatar,
+        created_at: f.created_at,
+      };
+    })
+  );
 };
