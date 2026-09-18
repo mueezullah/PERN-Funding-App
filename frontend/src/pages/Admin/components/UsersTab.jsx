@@ -170,11 +170,19 @@ const UsersTab = ({ users, loading, error, handleRoleChange }) => {
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div
-                          className={`h-9 w-9 rounded-full flex items-center justify-center text-white font-bold text-sm ${avatarColors[index % avatarColors.length]}`}
-                        >
-                          {user.name.charAt(0)}
-                        </div>
+                        {user.avatar_url ? (
+                          <img
+                            src={user.avatar_url}
+                            alt={user.name}
+                            className="h-9 w-9 rounded-full object-cover border border-gray-200"
+                          />
+                        ) : (
+                          <div
+                            className={`h-9 w-9 rounded-full flex items-center justify-center text-white font-bold text-sm ${avatarColors[index % avatarColors.length]}`}
+                          >
+                            {user.name.charAt(0)}
+                          </div>
+                        )}
                         <div className="ml-3 text-sm font-medium text-gray-900">
                           {user.name}
                         </div>

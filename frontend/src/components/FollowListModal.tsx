@@ -9,6 +9,7 @@ interface FollowUser {
   username?: string;
   email?: string;
   profile_picture?: string;
+  avatar_url?: string;
 }
 
 interface FollowListModalProps {
@@ -78,45 +79,50 @@ export function FollowListModal({ isOpen, onClose, userId, type }: FollowListMod
               No {type} yet.
             </div>
           ) : (
-            users.map((user) => (
-              <div
-                key={user.id}
-                className="flex items-center justify-between gap-3 p-2 rounded-2xl hover:bg-slate-50 transition-colors"
-              >
+            users.map((user) => {
+              const userAvatar = user.profile_picture || user.avatar_url;
+              return (
                 <div
-                  onClick={() => {
-                    onClose();
-                    navigate(`/profile/${user.username || user.id}`);
-                  }}
-                  className="flex items-center gap-3 cursor-pointer flex-1 min-w-0"
+                  key={user.id}
+                  className="flex items-center justify-between gap-3 p-2 rounded-2xl hover:bg-slate-50 transition-colors"
                 >
-                  <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center text-slate-500">
-                    {user.profile_picture ? (
-                      <img
-                        src={user.profile_picture}
-                        alt={user.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <User className="w-5 h-5" />
-                    )}
-                  </div>
-                  <div className="truncate">
-                    <p className="text-sm font-semibold text-slate-900 truncate">
-                      {user.name}
-                    </p>
-                    {user.username && (
-                      <p className="text-xs text-slate-500 truncate">
-                        @{user.username}
+                  <div
+                    onClick={() => {
+                      onClose();
+                      navigate(`/profile/${user.username || user.id}`);
+                    }}
+                    className="flex items-center gap-3 cursor-pointer flex-1 min-w-0"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center text-slate-500">
+                      {userAvatar ? (
+                        <img
+                          src={userAvatar}
+                          alt={user.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white font-bold text-sm">
+                          {user.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="truncate">
+                      <p className="text-sm font-semibold text-slate-900 truncate">
+                        {user.name}
                       </p>
-                    )}
+                      {user.username && (
+                        <p className="text-xs text-slate-500 truncate">
+                          @{user.username}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {/* Follow Button for listed user */}
-                <FollowButton targetUserId={user.id} />
-              </div>
-            ))
+                  {/* Follow Button for listed user */}
+                  <FollowButton targetUserId={user.id} />
+                </div>
+              );
+            })
           )}
         </div>
       </div>

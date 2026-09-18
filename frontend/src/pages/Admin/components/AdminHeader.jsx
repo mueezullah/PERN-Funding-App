@@ -29,9 +29,22 @@ const AdminHeader = ({
           </h1>
         </div>
         <div className="flex items-center gap-3">
-          <span className="mr-4 text-sm text-gray-600">
-            Admin, {name}
-          </span>
+          <div className="flex items-center gap-2 mr-3">
+            {localStorage.getItem("avatar") ? (
+              <img
+                src={localStorage.getItem("avatar")}
+                alt={name || "Admin"}
+                className="h-8 w-8 rounded-full object-cover border border-gray-200"
+              />
+            ) : (
+              <div className="h-8 w-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
+                {(name || "A").charAt(0).toUpperCase()}
+              </div>
+            )}
+            <span className="text-sm font-medium text-gray-700">
+              Admin, {name}
+            </span>
+          </div>
           <button
             onClick={handleFeedClick}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors cursor-pointer"
