@@ -1,248 +1,227 @@
 import React, { useState } from "react";
-import { Shield, ChevronDown } from "lucide-react";
-
-const avatarColors = [
-  "bg-purple-500",
-  "bg-blue-500",
-  "bg-green-500",
-  "bg-yellow-500",
-  "bg-red-500",
-  "bg-indigo-500",
-  "bg-pink-500",
-  "bg-teal-500",
-];
+import { Shield, Search, ChevronDown, CheckCircle2, XCircle, Users, ExternalLink, UserCheck } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 
 const roleOptions = [
-  { key: "user", label: "Users", badgeClass: "bg-green-100 text-green-800" },
-  {
-    key: "moderator",
-    label: "Moderators",
-    badgeClass: "bg-yellow-100 text-yellow-800",
-  },
-  {
-    key: "fundraiser",
-    label: "Fundraisers",
-    badgeClass: "bg-orange-100 text-orange-800",
-  },
-  {
-    key: "admin",
-    label: "Admins",
-    badgeClass: "bg-purple-100 text-purple-800",
-  },
+  { key: "all", label: "All Users", badgeClass: "bg-slate-100 text-slate-800" },
+  { key: "user", label: "Users", badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  { key: "fundraiser", label: "Fundraisers", badgeClass: "bg-indigo-50 text-indigo-700 border-indigo-200" },
+  { key: "moderator", label: "Moderators", badgeClass: "bg-amber-50 text-amber-700 border-amber-200" },
+  { key: "admin", label: "Admins", badgeClass: "bg-purple-50 text-purple-700 border-purple-200" },
 ];
 
-const UsersTab = ({ users, loading, error, handleRoleChange }) => {
-  const [selectedRole, setSelectedRole] = useState("user");
-  const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
+const UsersTab = ({ users = [], loading = false, error = null, handleRoleChange }) => {
+  const [selectedRole, setSelectedRole] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [kycFilter, setKycFilter] = useState("all");
 
-  const filteredUsers = users.filter((u) => u.role === selectedRole);
-  const currentRoleOption = roleOptions.find((r) => r.key === selectedRole);
+  const filteredUsers = users.filter((u) => {
+    const matchesRole = selectedRole === "all" || u.role === selectedRole;
+    const matchesKyc =
+      kycFilter === "all" ||
+      (kycFilter === "verified" && u.kyc_verified) ||
+      (kycFilter === "unverified" && !u.kyc_verified);
+    const matchesSearch =
+      (u.name && u.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (u.username && u.username.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (u.email && u.email.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    return matchesRole && matchesKyc && matchesSearch;
+  });
 
   return (
-    <div>
-      {/* Role selector dropdown */}
-      <div className="relative inline-block mb-5">
-        <button
-          onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition-colors cursor-pointer"
-        >
-          <Shield className="h-4 w-4 text-gray-500" />
-          <span className="font-medium text-gray-700">
-            {currentRoleOption ? currentRoleOption.label : "Users"}
-          </span>
-          <span
-            className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-              currentRoleOption ? currentRoleOption.badgeClass : "bg-green-100 text-green-800"
-            }`}
-          >
-            {loading ? "..." : filteredUsers.length}
-          </span>
-          <ChevronDown
-            className={`h-4 w-4 text-gray-400 transition-transform ${roleDropdownOpen ? "rotate-180" : ""}`}
-          />
-        </button>
+    <div className="space-y-6 pb-12">
+      {/* Top Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card border border-border p-4 sm:p-5 rounded-2xl shadow-xs">
+        <div>
+          <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <Users className="h-5 w-5 text-indigo-500" />
+            User Management & Role Permissions
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Manage user accounts, assign fundraiser/admin privileges, and inspect KYC compliance
+          </p>
+        </div>
 
-        {roleDropdownOpen && (
-          <div className="absolute left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="text-xs font-bold py-1 px-3 bg-muted">
+            Total Accounts: {users.length}
+          </Badge>
+        </div>
+      </div>
+
+      {/* Filter and Search Controls */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        {/* Search */}
+        <div className="relative flex-1 max-w-md">
+          <Search className="h-4 w-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search by name, @username, or email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-card border border-border rounded-xl text-xs font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+          />
+        </div>
+
+        {/* Filter Pills */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Role Filter */}
+          <div className="flex items-center gap-1 bg-muted p-1 rounded-xl border border-border overflow-x-auto">
             {roleOptions.map((opt) => (
               <button
                 key={opt.key}
-                onClick={() => {
-                  setSelectedRole(opt.key);
-                  setRoleDropdownOpen(false);
-                }}
-                className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer
-                                            ${selectedRole === opt.key ? "bg-indigo-50 text-indigo-700 font-semibold" : "text-gray-700"}
-                                            ${opt.key === "user" ? "rounded-t-lg" : ""}
-                                            ${opt.key === "admin" ? "rounded-b-lg" : ""}`}
+                onClick={() => setSelectedRole(opt.key)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all cursor-pointer whitespace-nowrap ${
+                  selectedRole === opt.key
+                    ? "bg-background text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
               >
-                {opt.label}
-                <span
-                  className={`px-2 py-0.5 rounded-full text-xs font-medium ${opt.badgeClass}`}
-                >
-                  {loading
-                    ? "..."
-                    : users.filter((u) => u.role === opt.key).length}
-                </span>
+                {opt.label} ({
+                  opt.key === "all"
+                    ? users.length
+                    : users.filter((u) => u.role === opt.key).length
+                })
               </button>
             ))}
           </div>
-        )}
-      </div>
 
-      {/* Filtered user table */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  KYC Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Change Role
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {loading ? (
-                <tr>
-                  <td
-                    colSpan="5"
-                    className="px-6 py-10 text-center text-gray-500"
-                  >
-                    <div className="flex justify-center items-center">
-                      <svg
-                        className="animate-spin h-5 w-5 mr-3 text-indigo-600"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                          fill="none"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                        />
-                      </svg>
-                      Loading...
-                    </div>
-                  </td>
-                </tr>
-              ) : error ? (
-                <tr>
-                  <td
-                    colSpan="5"
-                    className="px-6 py-10 text-center text-red-500"
-                  >
-                    {error}
-                  </td>
-                </tr>
-              ) : filteredUsers.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan="5"
-                    className="px-6 py-10 text-center text-gray-400 text-sm"
-                  >
-                    No {selectedRole}s found.
-                  </td>
-                </tr>
-              ) : (
-                filteredUsers.map((user, index) => (
-                  <tr
-                    key={user.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        {user.avatar_url ? (
-                          <img
-                            src={user.avatar_url}
-                            alt={user.name}
-                            className="h-9 w-9 rounded-full object-cover border border-gray-200"
-                          />
-                        ) : (
-                          <div
-                            className={`h-9 w-9 rounded-full flex items-center justify-center text-white font-bold text-sm ${avatarColors[index % avatarColors.length]}`}
-                          >
-                            {user.name.charAt(0)}
-                          </div>
-                        )}
-                        <div className="ml-3 text-sm font-medium text-gray-900">
-                          {user.name}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {user.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          currentRoleOption ? currentRoleOption.badgeClass : "bg-green-100 text-green-800"
-                        }`}
-                      >
-                        {user.role.charAt(0).toUpperCase() +
-                          user.role.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          user.kyc_verified
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {user.kyc_verified ? "Verified" : "Unverified"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex items-center relative w-full max-w-45">
-                        <Shield className="h-4 w-4 text-gray-400 absolute left-2 pointer-events-none" />
-                        <select
-                          value={user.role}
-                          onChange={(e) =>
-                            handleRoleChange(user.id, e.target.value)
-                          }
-                          className="block w-full pl-8 pr-3 py-1.5 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                        >
-                          <option value="user">User</option>
-                          <option value="moderator">Moderator</option>
-                          <option value="fundraiser">Fundraiser</option>
-                          <option value="admin">Admin</option>
-                        </select>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-        <div className="bg-gray-50 px-4 py-3 border-t border-gray-200 sm:px-6">
-          <div className="text-sm text-gray-700">
-            Showing{" "}
-            <span className="font-medium">{filteredUsers.length}</span>{" "}
-            {currentRoleOption ? currentRoleOption.label.toLowerCase() : "users"}
+          {/* KYC Filter */}
+          <div className="flex items-center gap-1 bg-muted p-1 rounded-xl border border-border">
+            <button
+              onClick={() => setKycFilter("all")}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                kycFilter === "all" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
+              }`}
+            >
+              All KYC
+            </button>
+            <button
+              onClick={() => setKycFilter("verified")}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                kycFilter === "verified" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
+              }`}
+            >
+              Verified
+            </button>
+            <button
+              onClick={() => setKycFilter("unverified")}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                kycFilter === "unverified" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
+              }`}
+            >
+              Unverified
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Users Table */}
+      <Card className="border-border bg-card shadow-xs">
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="py-16 text-center text-xs text-muted-foreground">
+              Loading platform users...
+            </div>
+          ) : filteredUsers.length === 0 ? (
+            <div className="py-16 text-center text-xs text-muted-foreground">
+              No users found matching your search and filter criteria.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-border bg-muted/40 text-muted-foreground font-semibold">
+                    <th className="py-3 px-4">User</th>
+                    <th className="py-3 px-4">Email</th>
+                    <th className="py-3 px-4">KYC Trust</th>
+                    <th className="py-3 px-4">Assigned Role</th>
+                    <th className="py-3 px-4 text-right">Role Permissions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {filteredUsers.map((user) => (
+                    <tr key={user.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-3">
+                          {user.avatar_url ? (
+                            <img
+                              src={user.avatar_url}
+                              alt={user.name}
+                              className="w-8 h-8 rounded-full object-cover border border-border"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs">
+                              {(user.name || "U").charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div>
+                            <Link
+                              to={`/user/${user.username}`}
+                              className="font-bold text-foreground hover:text-indigo-600 transition-colors flex items-center gap-1"
+                            >
+                              <span>{user.name}</span>
+                              <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                            </Link>
+                            <p className="text-[10px] text-muted-foreground">@{user.username}</p>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4 text-muted-foreground">{user.email}</td>
+
+                      <td className="py-3.5 px-4">
+                        {user.kyc_verified ? (
+                          <Badge variant="success" className="text-[10px] font-bold py-0.5 px-2">
+                            <CheckCircle2 className="h-2.5 w-2.5 mr-1 inline" /> Verified
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="text-[10px] font-bold py-0.5 px-2 text-muted-foreground">
+                            <XCircle className="h-2.5 w-2.5 mr-1 inline" /> Unverified
+                          </Badge>
+                        )}
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] font-bold uppercase py-0.5 px-2 ${
+                            user.role === "admin"
+                              ? "bg-purple-50 text-purple-700 border-purple-200"
+                              : user.role === "fundraiser"
+                              ? "bg-indigo-50 text-indigo-700 border-indigo-200"
+                              : user.role === "moderator"
+                              ? "bg-amber-50 text-amber-700 border-amber-200"
+                              : "bg-slate-100 text-slate-700"
+                          }`}
+                        >
+                          {user.role}
+                        </Badge>
+                      </td>
+
+                      <td className="py-3.5 px-4 text-right">
+                        <select
+                          value={user.role}
+                          onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                          className="bg-background border border-border text-foreground text-xs font-semibold rounded-lg px-2.5 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer"
+                        >
+                          <option value="user">User</option>
+                          <option value="fundraiser">Fundraiser</option>
+                          <option value="moderator">Moderator</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
