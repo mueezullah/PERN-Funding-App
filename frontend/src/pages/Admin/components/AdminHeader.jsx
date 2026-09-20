@@ -1,63 +1,86 @@
 import React from "react";
-import { Menu, Home, LogOut } from "lucide-react";
+import { Menu, Home, LogOut, ShieldAlert, CheckCircle2, ShieldCheck } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const AdminHeader = ({
   activeView,
   name,
+  avatar,
   handleFeedClick,
   handleLogout,
   setSidebarOpen,
 }) => {
   return (
-    <header className="bg-white shadow-sm z-10">
-      <div className="px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+    <header className="bg-card border-b border-border shadow-xs z-10 sticky top-0">
+      <div className="px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center gap-3">
+        {/* Left: Mobile hamburger & Active Page Title */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 cursor-pointer"
+            className="md:hidden p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
+            aria-label="Open navigation menu"
           >
-            <Menu className="h-6 w-6" />
+            <Menu className="h-5 w-5" />
           </button>
-          <h1 className="text-2xl font-semibold text-gray-800">
-            {activeView === "dashboard"
-              ? "Overview"
-              : activeView === "users"
-                ? "User Management"
+
+          <div>
+            <h1 className="text-lg sm:text-xl font-bold text-foreground">
+              {activeView === "dashboard"
+                ? "Executive Command Center"
+                : activeView === "users"
+                ? "User & Role Management"
                 : activeView === "campaigns"
-                  ? "Campaigns"
-                  : "Settings"}
-          </h1>
+                ? "Campaigns Moderation"
+                : activeView === "donations"
+                ? "Financial Audit & Ledger"
+                : activeView === "kyc"
+                ? "KYC Verification Queue"
+                : "Platform Security & Settings"}
+            </h1>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 mr-3">
-            {localStorage.getItem("avatar") ? (
+
+        {/* Right: Admin Profile & Actions */}
+        <div className="flex items-center gap-2.5">
+          {/* Admin Profile Chip */}
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-muted/60 border border-border">
+            {avatar || localStorage.getItem("avatar") ? (
               <img
-                src={localStorage.getItem("avatar")}
+                src={avatar || localStorage.getItem("avatar") || ""}
                 alt={name || "Admin"}
-                className="h-8 w-8 rounded-full object-cover border border-gray-200"
+                className="h-6 w-6 rounded-full object-cover border border-border"
               />
             ) : (
-              <div className="h-8 w-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
+              <div className="h-6 w-6 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-[10px]">
                 {(name || "A").charAt(0).toUpperCase()}
               </div>
             )}
-            <span className="text-sm font-medium text-gray-700">
-              Admin, {name}
+            <span className="text-xs font-bold text-foreground truncate max-w-[120px]">
+              {name || "Admin"}
             </span>
+            <Badge variant="outline" className="text-[9px] font-extrabold uppercase bg-purple-50 text-purple-700 border-purple-200 py-0 px-1.5 rounded-md">
+              Admin
+            </Badge>
           </div>
+
+          {/* Feed Navigation */}
           <button
             onClick={handleFeedClick}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors cursor-pointer"
+            className="inline-flex items-center px-3 py-1.5 border border-border text-xs font-semibold rounded-xl text-foreground bg-background hover:bg-muted transition-colors cursor-pointer gap-1.5"
+            title="Return to Public Feed"
           >
-            <Home className="h-4 w-4 mr-2" />
-            <span>Feed</span>
+            <Home className="h-3.5 w-3.5 text-indigo-500" />
+            <span className="hidden md:inline">Feed</span>
           </button>
+
+          {/* Logout */}
           <button
             onClick={handleLogout}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors cursor-pointer"
+            className="inline-flex items-center p-2 sm:px-3 sm:py-1.5 border border-transparent text-xs font-semibold rounded-xl text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer gap-1.5"
+            title="Sign Out"
           >
-            <LogOut className="h-4 w-4 mr-2" />
-            Logout
+            <LogOut className="h-3.5 w-3.5" />
+            <span className="hidden md:inline">Logout</span>
           </button>
         </div>
       </div>
