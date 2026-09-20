@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Heart,
   MessageSquare,
@@ -13,7 +13,6 @@ import {
   UserPlus,
   EyeOff,
 } from "lucide-react";
-import { useEffect, useRef } from "react";
 import { handleSuccess, handleError } from "../../../utils";
 import { ImageWithFallback } from "../../../components/ImageWithFallback";
 import { useNavigate } from "react-router-dom";
@@ -176,10 +175,35 @@ export function FeedCard({
         }
         break;
 
-      case "pin":
-        handleSuccess("Post successfully pinned to your profile!");
-        // TODO: Call API endpoint POST /api/users/pin with post ID
+      case "pin": {
+        const rawId = String(id).replace(/^(post|campaign)-/, "");
+        const isCampaign = type === "campaign" || String(id).startsWith("campaign-");
+        const endpoint = isCampaign ? `/campaigns/${rawId}/pin` : `/posts/${rawId}/pin`;
+        const token = localStorage.getItem("token");
+        fetch(`${import.meta.env.VITE_BASE_API_URL}${endpoint}`, {
+          method: "PATCH",
+          headers: {
+            Authorization: token?.startsWith("Bearer ") ? token : `Bearer ${token}`,
+          },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              const isPinned = data.data?.pinned;
+              showMinimalToast(
+                isPinned
+                  ? `${isCampaign ? "Campaign" : "Post"} Pinned to Profile`
+                  : `${isCampaign ? "Campaign" : "Post"} Unpinned`
+              );
+            } else {
+              handleError(data.message || "Failed to toggle pin");
+            }
+          })
+          .catch((err) => {
+            handleError(err?.message || "Failed to toggle pin");
+          });
         break;
+      }
 
       case "report":
         handleSuccess("Thank you! This content has been reported for review.");
