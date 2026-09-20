@@ -29,7 +29,7 @@ export function Hero() {
             <p className="text-xl text-slate-600 leading-relaxed">
               Connect with backers who believe in your vision. Launch your
               campaign, raise funds, and bring your projects to life with
-              FundME's platform.
+              OnlyFunds' platform.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">

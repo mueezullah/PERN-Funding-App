@@ -144,7 +144,7 @@ export function Footer() {
         <div className="pt-8 border-t border-slate-800">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-slate-400 text-sm">
-              © {currentYear} FundME. All rights reserved.
+              © {currentYear} OnlyFunds. All rights reserved.
             </p>
             <div className="flex gap-6 text-sm">
               <a href="#" className="hover:text-amber-400 transition-colors">

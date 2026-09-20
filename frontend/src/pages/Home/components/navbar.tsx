@@ -33,7 +33,7 @@ export function Navbar({ isAuthenticated }: { isAuthenticated: boolean }) {
               <Wallet className="w-5 h-5 text-amber-400" />
             </div>
             <span className="text-xl font-extrabold tracking-tight text-slate-900">
-              Fund<span className="text-amber-500">ME</span>
+              Only<span className="text-amber-500">Funds</span>
             </span>
           </div>
 

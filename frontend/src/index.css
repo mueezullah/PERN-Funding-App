@@ -43,6 +43,141 @@
     --color-card: var(--card);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
+
+
+    /* ─── OnlyFunds Signature Palette ─────────────────────────────────────────
+       Primary:  #00aff0  (bright sky blue)
+       Deep:     #018cf1  (rich blue — hover / active states)
+       Dark:     #27272b  (near-black — dark surfaces, text)
+       White:    #ffffff
+       Muted:    #8a96a3  (cool gray — secondary text, borders)
+    ──────────────────────────────────────────────────────────────────────── */
+
+    /* Brand tokens */
+    --color-brand:        #00aff0;
+    --color-brand-deep:   #018cf1;
+    --color-brand-hover:  #0099d4;
+    --color-brand-light:  #e0f6fd;
+    --color-brand-muted:  #8a96a3;
+    --color-brand-dark:   #27272b;
+
+    /* Blue scale — anchored at #00aff0 (500) and #018cf1 (600) */
+    --color-blue-50:  #e0f6fd;
+    --color-blue-100: #b8ecfb;
+    --color-blue-200: #82dcf7;
+    --color-blue-300: #3dcbf3;
+    --color-blue-400: #12bcf2;
+    --color-blue-500: #00aff0;
+    --color-blue-600: #018cf1;
+    --color-blue-700: #0271c2;
+    --color-blue-800: #065796;
+    --color-blue-900: #0c4779;
+    --color-blue-950: #082c4d;
+
+    /* Indigo scale — same ramp so indigo-* classes track the brand too */
+    --color-indigo-50:  #e0f6fd;
+    --color-indigo-100: #b8ecfb;
+    --color-indigo-200: #82dcf7;
+    --color-indigo-300: #3dcbf3;
+    --color-indigo-400: #12bcf2;
+    --color-indigo-500: #00aff0;
+    --color-indigo-600: #018cf1;
+    --color-indigo-700: #0271c2;
+    --color-indigo-800: #065796;
+    --color-indigo-900: #0c4779;
+    --color-indigo-950: #082c4d;
+
+    /* Violet scale — remapped to brand blue so indigo→violet gradients stay on-brand */
+    --color-violet-50:  #e0f6fd;
+    --color-violet-100: #b8ecfb;
+    --color-violet-200: #82dcf7;
+    --color-violet-300: #3dcbf3;
+    --color-violet-400: #12bcf2;
+    --color-violet-500: #00aff0;
+    --color-violet-600: #018cf1;
+    --color-violet-700: #0271c2;
+    --color-violet-800: #065796;
+    --color-violet-900: #0c4779;
+    --color-violet-950: #082c4d;
+
+    /* Purple scale — same remap for any stray purple-* classes */
+    --color-purple-50:  #e0f6fd;
+    --color-purple-100: #b8ecfb;
+    --color-purple-200: #82dcf7;
+    --color-purple-300: #3dcbf3;
+    --color-purple-400: #12bcf2;
+    --color-purple-500: #00aff0;
+    --color-purple-600: #018cf1;
+    --color-purple-700: #0271c2;
+    --color-purple-800: #065796;
+    --color-purple-900: #0c4779;
+    --color-purple-950: #082c4d;
+
+    /* Dark / near-black ramp — anchored at #27272b */
+    --color-dark-50:  #f4f4f5;
+    --color-dark-100: #e4e4e7;
+    --color-dark-200: #c8c9cb;
+    --color-dark-300: #a1a3a8;
+    --color-dark-400: #7a7d83;
+    --color-dark-500: #55575c;
+    --color-dark-600: #3e3e42;
+    --color-dark-700: #323236;
+    --color-dark-800: #27272b;
+    --color-dark-900: #1a1a1d;
+    --color-dark-950: #0d0d0e;
+
+    /* Muted / cool-gray ramp — anchored at #8a96a3 */
+    --color-muted-50:  #f4f5f6;
+    --color-muted-100: #e8eaed;
+    --color-muted-200: #d0d4da;
+    --color-muted-300: #b2bac3;
+    --color-muted-400: #8a96a3;
+    --color-muted-500: #6e7a88;
+    --color-muted-600: #58636f;
+    --color-muted-700: #454e58;
+    --color-muted-800: #353c44;
+    --color-muted-900: #272d33;
+    --color-muted-950: #141a1e;
+
+    /* Slate scale — cool-gray aligned with #8a96a3 (mid) and #27272b (dark) */
+    --color-slate-50:  #f4f5f6;
+    --color-slate-100: #e8eaed;
+    --color-slate-200: #d0d4da;
+    --color-slate-300: #b2bac3;
+    --color-slate-400: #8a96a3;
+    --color-slate-500: #6e7a88;
+    --color-slate-600: #58636f;
+    --color-slate-700: #454e58;
+    --color-slate-800: #353c44;
+    --color-slate-900: #27272b;
+    --color-slate-950: #141a1e;
+
+    /* Gray scale — same ramp for any gray-* classes */
+    --color-gray-50:  #f4f5f6;
+    --color-gray-100: #e8eaed;
+    --color-gray-200: #d0d4da;
+    --color-gray-300: #b2bac3;
+    --color-gray-400: #8a96a3;
+    --color-gray-500: #6e7a88;
+    --color-gray-600: #58636f;
+    --color-gray-700: #454e58;
+    --color-gray-800: #353c44;
+    --color-gray-900: #27272b;
+    --color-gray-950: #141a1e;
+
+    /* Zinc scale — same ramp */
+    --color-zinc-50:  #f4f5f6;
+    --color-zinc-100: #e8eaed;
+    --color-zinc-200: #d0d4da;
+    --color-zinc-300: #b2bac3;
+    --color-zinc-400: #8a96a3;
+    --color-zinc-500: #6e7a88;
+    --color-zinc-600: #58636f;
+    --color-zinc-700: #454e58;
+    --color-zinc-800: #353c44;
+    --color-zinc-900: #27272b;
+    --color-zinc-950: #141a1e;
+
     --radius-sm: calc(var(--radius) * 0.6);
     --radius-md: calc(var(--radius) * 0.8);
     --radius-lg: var(--radius);
@@ -64,13 +199,13 @@
     --secondary: oklch(0.97 0 0);
     --secondary-foreground: oklch(0.205 0 0);
     --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
+    --muted-foreground: #8a96a3;
     --accent: oklch(0.97 0 0);
     --accent-foreground: oklch(0.205 0 0);
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
+    --border: #d0d4da;
+    --input: #e8eaed;
+    --ring: #00aff0;
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);

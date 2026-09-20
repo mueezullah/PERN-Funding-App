@@ -30,7 +30,7 @@ export function About() {
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="text-amber-600 text-sm font-medium uppercase tracking-wider">
-            About FundME
+            About OnlyFunds
           </span>
           <h2 className="text-4xl lg:text-5xl mt-3 mb-6 font-extrabold text-slate-900">
             Empowering Creators, <span className="text-amber-500">One Campaign at a Time</span>
@@ -99,7 +99,7 @@ export function About() {
           </div>
 
           <div className="order-1 lg:order-2 space-y-6">
-            <h3 className="text-3xl font-bold text-slate-900">Why Choose FundME?</h3>
+            <h3 className="text-3xl font-bold text-slate-900">Why Choose OnlyFunds?</h3>
             <p className="text-lg text-slate-600">
               Since our founding, we've been committed to democratizing access to funding. Whether you're launching a tech startup, creative project, or social enterprise, we provide the tools and community support you need to succeed.
             </p>
