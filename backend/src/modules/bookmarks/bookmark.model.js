@@ -13,7 +13,7 @@ export const toggleBookmark = async (userId, { postId, campaignId }) => {
   if (postId) {
     const pId = parseInt(postId, 10);
     const existing = await prisma.bookmark.findUnique({
-      where: { unique_bookmark_post: { user_id: uId, post_id: pId } },
+      where: { user_id_post_id: { user_id: uId, post_id: pId } },
     });
     if (existing) {
       await prisma.bookmark.delete({ where: { id: existing.id } });
@@ -26,7 +26,7 @@ export const toggleBookmark = async (userId, { postId, campaignId }) => {
   // campaignId branch
   const cId = parseInt(campaignId, 10);
   const existing = await prisma.bookmark.findUnique({
-    where: { unique_bookmark_campaign: { user_id: uId, campaign_id: cId } },
+    where: { user_id_campaign_id: { user_id: uId, campaign_id: cId } },
   });
   if (existing) {
     await prisma.bookmark.delete({ where: { id: existing.id } });

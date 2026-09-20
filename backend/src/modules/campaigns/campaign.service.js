@@ -199,3 +199,8 @@ export const deleteCampaign = async (id, userId) => {
     refunds: refundResults,
   };
 };
+
+export const togglePin = async (id, userId) => {
+  return await Campaign.togglePin(id, userId);
+};
+

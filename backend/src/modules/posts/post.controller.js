@@ -1,9 +1,6 @@
 import * as Post from "./post.model.js";
 import { getPaginationData, parsePaginationParams } from "../../utils/pagination.js";
-
-const asyncHandler = (fn) => (req, res, next) => {
-  Promise.resolve(fn(req, res, next)).catch(next);
-};
+import asyncHandler from "../../middlewares/asyncHandler.js";
 
 export const createPost = asyncHandler(async (req, res, next) => {
 
@@ -137,3 +134,20 @@ export const getPostById = asyncHandler(async (req, res, next) => {
     data: post
   });
 });
+
+/**
+ * PATCH /posts/:id/pin
+ * Toggles the pinned state of a post. Only the owner can pin/unpin.
+ */
+export const pinPost = asyncHandler(async (req, res) => {
+  const postId = parseInt(req.params.id, 10);
+  const result = await Post.togglePin(postId, req.user.id);
+  if (!result) {
+    return res.status(404).json({
+      success: false,
+      message: "Post not found or you do not own this post",
+    });
+  }
+  return res.status(200).json({ success: true, data: result });
+});
+

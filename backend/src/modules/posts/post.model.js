@@ -78,7 +78,7 @@ export const findByUserId = async (userId, limit = 10, offset = 0) => {
         },
       },
       // Pinned items first (pinned_at DESC nulls last), then chronological
-      orderBy: [{ pinned_at: "desc" }, { created_at: "desc" }],
+      orderBy: [{ pinned_at: { sort: "desc", nulls: "last" } }, { created_at: "desc" }],
       take: parseInt(limit, 10),
       skip: parseInt(offset, 10),
     }),

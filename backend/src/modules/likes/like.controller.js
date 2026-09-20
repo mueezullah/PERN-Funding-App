@@ -1,8 +1,5 @@
 import * as Like from "./like.model.js";
-
-const asyncHandler = (fn) => (req, res, next) => {
-  Promise.resolve(fn(req, res, next)).catch(next);
-};
+import asyncHandler from "../../middlewares/asyncHandler.js";
 
 export const toggleLike = asyncHandler(async (req, res) => {
   const { targetType, targetId } = req.body;

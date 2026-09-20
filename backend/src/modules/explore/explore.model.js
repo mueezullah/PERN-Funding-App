@@ -83,8 +83,12 @@ export const getExploreFeed = async (limit = 10, offset = 0) => {
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 
-  // Apply pagination manually after merge-sort
-  const total = combined.length; // approximate total for pagination UI
+  // Calculate true total count across both entities
+  const [totalPosts, totalCampaigns] = await Promise.all([
+    prisma.post.count({ where: { status: { not: "deleted" } } }),
+    prisma.campaign.count({ where: { status: { not: "deleted" } } }),
+  ]);
+  const total = totalPosts + totalCampaigns;
   const page = combined.slice(off, off + lim);
 
   return { items: page, total };

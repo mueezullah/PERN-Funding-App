@@ -1,4 +1,5 @@
 import prisma from "../../config/prisma.js";
+import { getPresignedGetUrl } from "../../utils/s3.service.js";
 
 export const create = async (userId, targetType, targetId, content, parentId = null) => {
   return await prisma.comment.create({
@@ -26,7 +27,7 @@ export const findByTarget = async (targetType, targetId, since = null) => {
     where: whereCondition,
     include: {
       user: {
-        select: { name: true, username: true, role: true },
+        select: { name: true, username: true, role: true, avatar_url: true },
       },
       parent: {
         select: {
@@ -43,15 +44,17 @@ export const findByTarget = async (targetType, targetId, since = null) => {
     ],
   });
 
-  return comments.map((c) => ({
-    ...c,
-    author_name: c.user?.name,
-    author_username: c.user?.username,
-    author_role: c.user?.role,
-    author_avatar: c.user?.avatar_url,
-    reply_to_name: c.parent?.user?.name,
-    reply_to_username: c.parent?.user?.username,
-  }));
+  return await Promise.all(
+    comments.map(async (c) => ({
+      ...c,
+      author_name: c.user?.name,
+      author_username: c.user?.username,
+      author_role: c.user?.role,
+      author_avatar: await getPresignedGetUrl(c.user?.avatar_url),
+      reply_to_name: c.parent?.user?.name,
+      reply_to_username: c.parent?.user?.username,
+    }))
+  );
 };
 
 export const countByTarget = async (targetType, targetId) => {

@@ -1,8 +1,5 @@
 import * as Comment from "./comment.model.js";
-
-const asyncHandler = (fn) => (req, res, next) => {
-  Promise.resolve(fn(req, res, next)).catch(next);
-};
+import asyncHandler from "../../middlewares/asyncHandler.js";
 
 export const getComments = asyncHandler(async (req, res, next) => {
   const { targetType, targetId, since } = req.query;
