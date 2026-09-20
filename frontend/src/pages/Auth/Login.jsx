@@ -37,7 +37,7 @@ const Login = () => {
       });
 
       const result = await response.json();
-      const { success, message, jwtToken, name, username, error, role, id, redirectTo } =
+      const { success, message, jwtToken, name, username, error, role, id, avatar, redirectTo } =
         result;
       if (success) {
         localStorage.setItem("token", jwtToken);
@@ -45,6 +45,12 @@ const Login = () => {
         localStorage.setItem("role", role);
         localStorage.setItem("userId", String(id));
         localStorage.setItem("username", username);
+        if (avatar) {
+          localStorage.setItem("avatar", avatar);
+        } else {
+          localStorage.removeItem("avatar");
+        }
+        window.dispatchEvent(new Event("avatarChange"));
         sessionStorage.setItem("pendingToast", `Authenticated as ${name}`);
         navigate(redirectTo);
       } else if (error) {
@@ -97,7 +103,7 @@ const Login = () => {
           </div>
           <button
             type="submit"
-            className="bg-[#1877f2] border-0 text-xl text-white rounded-md py-2.5 cursor-pointer my-2.5"
+            className="bg-[#00AEEF] hover:bg-[#0094cb] border-0 text-xl text-white rounded-md py-2.5 cursor-pointer my-2.5 transition-colors"
           >
             Login
           </button>
