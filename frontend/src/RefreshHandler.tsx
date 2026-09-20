@@ -58,6 +58,12 @@ const RefreshHandler: FC<RefreshHandlerProps> = ({ setIsAuthenticated, setIsLoad
           if (data.name)     localStorage.setItem("name",     data.name);
           if (data.username) localStorage.setItem("username", data.username);
           if (data.userId)   localStorage.setItem("userId",   String(data.userId));
+          if (data.avatar) {
+            localStorage.setItem("avatar", data.avatar);
+          } else {
+            localStorage.removeItem("avatar");
+          }
+          window.dispatchEvent(new Event("avatarChange"));
           setIsAuthenticated(true);
         } else {
           setIsAuthenticated(false);
