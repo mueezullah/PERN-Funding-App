@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Search,
-  MessageCircle,
   PlusSquare,
   Bell,
   User,
@@ -90,6 +89,8 @@ export function Navbar({
     localStorage.removeItem("role");
     localStorage.removeItem("username");
     localStorage.removeItem("userId");
+    localStorage.removeItem("avatar");
+    window.dispatchEvent(new Event("avatarChange"));
     if (setIsAuthenticated) setIsAuthenticated(false);
     navigate("/");
   };
@@ -119,13 +120,37 @@ export function Navbar({
         navigate(`/user/${username}`);
       },
     },
-    { label: "Edit Avatar", icon: Shirt },
-    { label: "Drafts", icon: FileText },
-    { label: "Achievements", icon: Trophy },
-    { label: "Campaigns", icon: CircleDollarSign },
-    { label: "Premium", icon: Shield },
-    { label: "Display Mode", icon: ToggleLeft },
-    { label: "Settings", icon: SettingsIcon },
+    ...(role === "fundraiser" || role === "admin"
+      ? [
+          {
+            label: "Creator Dashboard",
+            icon: CircleDollarSign,
+            action: () => {
+              setIsProfileDropdownOpen(false);
+              navigate("/creator/dashboard");
+            },
+          },
+        ]
+      : []),
+    ...(role === "admin"
+      ? [
+          {
+            label: "Admin Dashboard",
+            icon: Shield,
+            action: () => {
+              setIsProfileDropdownOpen(false);
+              navigate("/admin/dashboard");
+            },
+          },
+        ]
+      : []),
+    // Non-working / placeholder options commented out:
+    // { label: "Edit Avatar", icon: Shirt },
+    // { label: "Drafts", icon: FileText },
+    // { label: "Achievements", icon: Trophy },
+    // { label: "Premium", icon: Shield },
+    // { label: "Display Mode", icon: ToggleLeft },
+    // { label: "Settings", icon: SettingsIcon },
   ];
 
   return (
@@ -140,7 +165,7 @@ export function Navbar({
 
         <div className="shrink-0 ml-4 w-auto md:w-64 text-xl md:text-2xl font-extrabold tracking-tight text-slate-900 flex items-center">
           <Link to="/feed">
-            FUNDME<span className="text-indigo-600">.</span>
+            OnlyFunds<span className="text-indigo-600">.</span>
           </Link>
         </div>
 
@@ -158,10 +183,6 @@ export function Navbar({
         </div>
 
         <div className="shrink-0 mr-4 flex justify-end items-center space-x-2 md:space-x-3 text-slate-600">
-          <button className="p-2 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors hidden sm:block">
-            <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
-          </button>
-
           {/* Create Dropdown */}
           <div className="relative" ref={createDropdownRef}>
             <button
