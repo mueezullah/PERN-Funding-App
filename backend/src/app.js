@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import routes from "./routes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { stripeWebhook } from "./modules/payments/payments.controller.js";
+import { diditWebhook } from "./modules/kyc/kyc.controller.js";
 import env from "./config/env.js";
 
 const app = express();
@@ -23,6 +24,16 @@ app.post(
     "/webhooks/stripe",
     express.raw({ type: "application/json" }),  // raw body as Buffer, NOT parsed JSON
     stripeWebhook
+);
+
+// ╔═══════════════════════════════════════════════════════════════════════════╗
+// ║  DIDIT WEBHOOK — same constraint as Stripe: must be BEFORE express.json  ║
+// ║  so the raw body bytes are intact for HMAC-SHA256 signature verification ║
+// ╚═══════════════════════════════════════════════════════════════════════════╝
+app.post(
+    "/webhooks/didit",
+    express.raw({ type: "application/json" }),
+    diditWebhook
 );
 
 // Global request pipeline parsing and security middlewares

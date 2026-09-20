@@ -9,6 +9,10 @@ import likeRoutes from "./modules/likes/like.routes.js";
 import followRoutes from "./modules/follows/follow.routes.js";
 import uploadRoutes from "./modules/upload/upload.routes.js";
 import adminRoutes from "./modules/admin/admin.routes.js";
+import kycRoutes from "./modules/kyc/kyc.routes.js";
+import bookmarkRoutes from "./modules/bookmarks/bookmark.routes.js";
+import exploreRoutes from "./modules/explore/explore.routes.js";
+import searchRoutes from "./modules/search/search.routes.js";
 
 const router = express.Router();
 
@@ -26,5 +30,9 @@ router.use("/likes", likeRoutes);
 router.use("/follows", followRoutes);
 router.use("/upload", uploadRoutes);
 router.use("/admin", adminRoutes);
+router.use("/kyc", kycRoutes);
+router.use("/bookmarks", bookmarkRoutes);
+router.use("/explore", exploreRoutes);
+router.use("/search", searchRoutes);
 
 export default router;
