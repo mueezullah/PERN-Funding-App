@@ -4,7 +4,7 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
-import { handleError, handleSuccess } from "../utils";
+import { handleError } from "../utils";
 
 interface CheckoutFormProps {
   onSuccess?: () => void;
@@ -55,7 +55,7 @@ export function CheckoutForm({ onSuccess, amount }: CheckoutFormProps) {
           throw new Error("Could not update campaign progress.");
         }
 
-        handleSuccess("Thank you! Your donation was successful.");
+        // Signal success to the parent DonationModal — it will show the success screen
         if (onSuccess) onSuccess();
       } catch (err: any) {
         setErrorMessage(err.message);
@@ -78,7 +78,8 @@ export function CheckoutForm({ onSuccess, amount }: CheckoutFormProps) {
 
       <button
         disabled={isLoading || !stripe || !elements}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 mt-4 rounded-lg transition-colors flex justify-center items-center disabled:opacity-50 disabled:cursor-not-allowed"
+        style={{ background: isLoading ? undefined : "#018cf1" }}
+        className="w-full hover:opacity-90 text-white font-bold py-3 mt-4 rounded-lg transition-all flex justify-center items-center disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isLoading ? (
           <span className="animate-pulse">Processing...</span>

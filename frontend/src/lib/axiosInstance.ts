@@ -101,6 +101,8 @@ api.interceptors.response.use(
         localStorage.removeItem("role");
         localStorage.removeItem("userId");
         localStorage.removeItem("username");
+        localStorage.removeItem("avatar");
+        window.dispatchEvent(new Event("avatarChange"));
         window.location.href = "/login";
         return Promise.reject(refreshError);
       } finally {
