@@ -164,8 +164,14 @@ export function ProfileFeed({
     return () => window.removeEventListener("profileUpdate", handleProfileUpdate);
   }, []);
 
+  const menuContainerRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
-    const handleClickOutside = () => setActiveMenuId(null);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuContainerRef.current && !menuContainerRef.current.contains(event.target as Node)) {
+        setActiveMenuId(null);
+      }
+    };
     if (activeMenuId) {
       document.addEventListener("mousedown", handleClickOutside);
     }
@@ -224,6 +230,15 @@ export function ProfileFeed({
     }
   };
 
+  const sortWithPinned = (items: any[]) => {
+    return [...items].sort((a, b) => {
+      const aPinned = a.pinned_at ? 1 : 0;
+      const bPinned = b.pinned_at ? 1 : 0;
+      if (aPinned !== bPinned) return bPinned - aPinned;
+      return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+    });
+  };
+
   const handleTogglePinPost = async (postId: number) => {
     setActiveMenuId(null);
     try {
@@ -239,13 +254,9 @@ export function ProfileFeed({
         const isPinned = data.data.pinned;
         setPosts((prev) => {
           const updated = prev.map((p) =>
-            p.id === postId ? { ...p, pinned_at: isPinned ? new Date().toISOString() : null } : p
+            p.id === postId ? { ...p, pinned_at: isPinned ? (data.data.pinned_at || new Date().toISOString()) : null } : p
           );
-          return [...updated].sort((a, b) => {
-            if (a.pinned_at && !b.pinned_at) return -1;
-            if (!a.pinned_at && b.pinned_at) return 1;
-            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-          });
+          return sortWithPinned(updated);
         });
         showMinimalToast(isPinned ? "Post Pinned to Profile" : "Post Unpinned");
       } else {
@@ -271,13 +282,9 @@ export function ProfileFeed({
         const isPinned = data.data.pinned;
         setCampaigns((prev) => {
           const updated = prev.map((c) =>
-            c.id === campaignId ? { ...c, pinned_at: isPinned ? new Date().toISOString() : null } : c
+            c.id === campaignId ? { ...c, pinned_at: isPinned ? (data.data.pinned_at || new Date().toISOString()) : null } : c
           );
-          return [...updated].sort((a, b) => {
-            if (a.pinned_at && !b.pinned_at) return -1;
-            if (!a.pinned_at && b.pinned_at) return 1;
-            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-          });
+          return sortWithPinned(updated);
         });
         showMinimalToast(isPinned ? "Campaign Pinned to Profile" : "Campaign Unpinned");
       } else {
@@ -290,11 +297,17 @@ export function ProfileFeed({
 
   const handleRemoveBookmark = async (item: any) => {
     try {
+      const isPost = item.type === "post" || !!item.post;
+      const targetPostId = item.post_id || (isPost ? (item.post?.id || item.id) : undefined);
+      const targetCampaignId = item.campaign_id || (!isPost ? (item.campaign?.id || item.id) : undefined);
+
       await toggleBookmark({
-        postId: item.post_id || undefined,
-        campaignId: item.campaign_id || undefined,
+        postId: targetPostId ? Number(targetPostId) : undefined,
+        campaignId: targetCampaignId ? Number(targetCampaignId) : undefined,
       });
-      setSavedItems((prev) => prev.filter((b) => b.id !== item.id));
+      setSavedItems((prev) =>
+        prev.filter((b) => (b.bookmarkId || b.id) !== (item.bookmarkId || item.id))
+      );
       showMinimalToast("Removed from Saved");
     } catch (err: any) {
       handleError(err.message || "Failed to remove bookmark");
@@ -459,18 +472,18 @@ export function ProfileFeed({
         const campaignsData = await responses[1].json();
 
         if (postsData.success) {
-          setPosts(postsData.data.posts || []);
+          setPosts(sortWithPinned(postsData.data.posts || []));
           setPostsPagination(postsData.data.pagination || null);
         }
         if (campaignsData.success) {
-          setCampaigns(campaignsData.data.campaigns || []);
+          setCampaigns(sortWithPinned(campaignsData.data.campaigns || []));
           setCampaignsPagination(campaignsData.data.pagination || null);
         }
 
         if (isOwnProfile && responses.length > 2) {
           const bookmarksData = await responses[2].json();
           if (bookmarksData.success) {
-            setSavedItems(bookmarksData.data.bookmarks || []);
+            setSavedItems(bookmarksData.data.items || bookmarksData.data.bookmarks || []);
             setSavedPagination(bookmarksData.data.pagination || null);
           }
           const donationsData = await responses[3].json();
@@ -517,7 +530,7 @@ export function ProfileFeed({
         );
         const data = await res.json();
         if (data.success) {
-          setPosts((prev) => [...prev, ...(data.data.posts || [])]);
+          setPosts((prev) => sortWithPinned([...prev, ...(data.data.posts || [])]));
           setPostsPagination(data.data.pagination || null);
         }
       } else if (activeTab === "Campaigns") {
@@ -526,7 +539,7 @@ export function ProfileFeed({
         );
         const data = await res.json();
         if (data.success) {
-          setCampaigns((prev) => [...prev, ...(data.data.campaigns || [])]);
+          setCampaigns((prev) => sortWithPinned([...prev, ...(data.data.campaigns || [])]));
           setCampaignsPagination(data.data.pagination || null);
         }
       } else if (activeTab === "Saved" && isOwnProfile) {
@@ -536,7 +549,7 @@ export function ProfileFeed({
         );
         const data = await res.json();
         if (data.success) {
-          setSavedItems((prev) => [...prev, ...(data.data.bookmarks || [])]);
+          setSavedItems((prev) => [...prev, ...(data.data.items || data.data.bookmarks || [])]);
           setSavedPagination(data.data.pagination || null);
         }
       } else if (activeTab === "Donations" && isOwnProfile) {
@@ -711,7 +724,11 @@ export function ProfileFeed({
             </div>
 
             {/* 3-dots Action Menu */}
-            <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <div
+              ref={activeMenuId === `post-${item.id}` ? menuContainerRef : null}
+              className="relative"
+              onClick={(e) => e.stopPropagation()}
+            >
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -848,7 +865,7 @@ export function ProfileFeed({
               </div>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-900">
-                  <span>{item.author_name || displayName}</span>
+                  <span>{item.owner_name || item.author_name || displayName}</span>
                   <span className="text-slate-400">·</span>
                   <span className="text-slate-500">
                     {formatRelativeTime(item.created_at)}
@@ -861,7 +878,11 @@ export function ProfileFeed({
             </div>
 
             {/* 3-dots Action Menu */}
-            <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <div
+              ref={activeMenuId === `campaign-${item.id}` ? menuContainerRef : null}
+              className="relative"
+              onClick={(e) => e.stopPropagation()}
+            >
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -1004,23 +1025,25 @@ export function ProfileFeed({
   };
 
   const renderSavedItem = (bookmark: any) => {
-    const isPost = !!bookmark.post;
-    const item = bookmark.post || bookmark.campaign;
+    const isPost = bookmark.type === "post" || !!bookmark.post;
+    const item = bookmark.post || bookmark.campaign || bookmark;
     if (!item) return null;
 
+    const savedDate = bookmark.bookmarkedAt || bookmark.created_at || item.created_at;
+
     return (
-      <div key={bookmark.id} className="relative group">
+      <div key={bookmark.bookmarkId || bookmark.id} className="relative group">
         <div className="flex items-center justify-between px-4 pt-2">
           <span className="text-xs font-semibold text-slate-400 flex items-center gap-1">
             <Bookmark className="w-3.5 h-3.5 fill-indigo-500 text-indigo-500" />
-            Saved on {new Date(bookmark.created_at).toLocaleDateString()}
+            Saved on {savedDate ? new Date(savedDate).toLocaleDateString() : "recent"}
           </span>
           <button
             onClick={(e) => {
               e.stopPropagation();
               handleRemoveBookmark(bookmark);
             }}
-            className="text-xs text-rose-500 hover:text-rose-700 font-medium px-2 py-1 rounded-md hover:bg-rose-50 transition-colors"
+            className="text-xs text-rose-500 hover:text-rose-700 font-medium px-2 py-1 rounded-md hover:bg-rose-50 transition-colors cursor-pointer"
           >
             Remove
           </button>
@@ -1082,7 +1105,7 @@ export function ProfileFeed({
         <div>
           <h3 className="text-lg font-bold text-slate-900 mb-2">About {displayName}</h3>
           <p className="text-slate-600 text-sm leading-relaxed">
-            {userProfileData?.bio || `${displayName} is a valued member of the FundME community.`}
+            {userProfileData?.bio || `${displayName} is a valued member of the OnlyFunds community.`}
           </p>
         </div>
 

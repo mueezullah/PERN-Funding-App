@@ -197,7 +197,7 @@ export function ProfileRightSidebar({
                 {posts}
               </p>
               <p className="text-[13px] text-slate-500 font-medium">
-                Updated Posts
+                Posts
               </p>
             </div>
             <div>
