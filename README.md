@@ -161,21 +161,13 @@ Users ─┬─→ Campaigns ──→ Donations
 
 ---
 
-## 🎓 College FYP Demo Guide & Credentials
-
-For examiners, evaluators, and demonstration purposes, the database includes preset accounts covering all three major workflows:
-
-| Role | Email | Password | Access / Dashboard |
-| :--- | :--- | :--- | :--- |
-| **Admin** | `admin@onlyfunds.com` | `Password123!` | `/admin/dashboard` — Platform stats, KYC review & approvals |
-| **Verified Creator** | `creator@onlyfunds.com` | `Password123!` | `/creator/dashboard` — Campaign creation, updates, backer analytics |
-| **Backer / User** | `donor@onlyfunds.com` | `Password123!` | `/feed` — Social feed, backing projects via Stripe, commenting |
+## 🎓 College FYP Demo Guide
 
 ### Recommended Demo Flow for FYP Presentation:
-1. **Public Landing & Discovery (`/`)**: Show the redesigned modern landing page with featured campaigns, trust indicators, and brand system.
-2. **Backer Experience (`/feed`)**: Log in as `donor@onlyfunds.com`. Browse campaigns, like/bookmark, interact with social feed posts, and make a live test donation using Stripe test cards (`4242 4242 4242 4242`).
-3. **Creator Experience (`/creator/dashboard`)**: Log in as `creator@onlyfunds.com`. Review the campaign progress, real-time analytics, and launch a new campaign.
-4. **KYC & Admin Governance (`/admin/dashboard`)**: Log in as `admin@onlyfunds.com`. Show platform analytics, inspect pending KYC applications, and approve/reject creators.
+1. **Public Landing & Discovery (`/`)**: Show the modern landing page with featured campaigns, trust indicators, and brand system.
+2. **Backer Experience (`/feed`)**: Register/log in as a user. Browse campaigns, like/bookmark, interact with social feed posts, and make a live test donation using Stripe test cards (`4242 4242 4242 4242`).
+3. **Creator Experience (`/creator/dashboard`)**: Access the Creator Dashboard to review campaign progress, real-time analytics, and launch a new campaign.
+4. **KYC & Admin Governance (`/admin/dashboard`)**: Access the Admin Dashboard to inspect platform analytics, review pending KYC applications, and approve/reject creators.
 
 ---
 
