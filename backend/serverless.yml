@@ -12,9 +12,9 @@ provider:
   environment:
     MEDIA_BUCKET_STAGING: fundme-media-staging
     # Didit KYC — set real values in Serverless Dashboard / CI secrets per stage
-    DIDIT_API_KEY: ${env:DIDIT_API_KEY, env:DIDIT_API_CLIENT_ID}
-    DIDIT_WEBHOOK_SECRET: ${env:DIDIT_WEBHOOK_SECRET}
-    DIDIT_WORKFLOW_ID: ${env:DIDIT_WORKFLOW_ID}
+    DIDIT_API_KEY: ${param:DIDIT_API_KEY, env:DIDIT_API_KEY, env:DIDIT_API_CLIENT_ID, ""}
+    DIDIT_WEBHOOK_SECRET: ${param:DIDIT_WEBHOOK_SECRET, env:DIDIT_WEBHOOK_SECRET, ""}
+    DIDIT_WORKFLOW_ID: ${param:DIDIT_WORKFLOW_ID, env:DIDIT_WORKFLOW_ID, ""}
   iam:
     role:
       statements:

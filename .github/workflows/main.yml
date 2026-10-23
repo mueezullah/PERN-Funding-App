@@ -87,6 +87,9 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+        DIDIT_API_KEY: ${{ secrets.DIDIT_API_KEY }}
+        DIDIT_WEBHOOK_SECRET: ${{ secrets.DIDIT_WEBHOOK_SECRET }}
+        DIDIT_WORKFLOW_ID: ${{ secrets.DIDIT_WORKFLOW_ID }}
 
   deploy-frontend:
     runs-on: ubuntu-latest
