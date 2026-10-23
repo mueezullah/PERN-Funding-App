@@ -1,9 +1,5 @@
 import * as campaignService from "./campaign.service.js";
-
-// Central wrapper to pipe unexpected exceptions straight to your errorHandler middleware
-const asyncHandler = (fn) => (req, res, next) => {
-  Promise.resolve(fn(req, res, next)).catch(next);
-};
+import asyncHandler from "../../middlewares/asyncHandler.js";
 
 export const create = asyncHandler(async (req, res) => {
   if (req.user.role !== "fundraiser" && req.user.role !== "admin") {
@@ -86,3 +82,25 @@ export const deleteCampaign = asyncHandler(async (req, res) => {
     refunds: result.refunds,
   });
 });
+
+export const pinCampaign = asyncHandler(async (req, res) => {
+  const campaignId = parseInt(req.params.id, 10);
+  const result = await campaignService.togglePin(campaignId, req.user.id);
+  if (!result) {
+    return res.status(404).json({
+      success: false,
+      message: "Campaign not found or you do not own this campaign",
+    });
+  }
+  return res.status(200).json({ success: true, data: result });
+});
+
+export const getCreatorAnalytics = asyncHandler(async (req, res) => {
+  const { getCreatorAnalytics: fetchAnalytics } = await import("./creator.service.js");
+  const analytics = await fetchAnalytics(req.user.id);
+  return res.status(200).json({
+    success: true,
+    data: analytics,
+  });
+});
+

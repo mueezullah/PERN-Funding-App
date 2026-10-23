@@ -36,9 +36,37 @@ const RefreshHandler: FC<RefreshHandlerProps> = ({ setIsAuthenticated, setIsLoad
       const token = localStorage.getItem("token");
 
       if (token) {
-        // Token present — trust it until an API call returns 401 (interceptor handles that)
+        // Token present — mark authenticated immediately
         setIsAuthenticated(true);
         setIsLoading(false);
+
+        // Silently verify if user role/profile changed in backend (e.g. KYC approved)
+        const BASE_URL = import.meta.env.VITE_BASE_API_URL as string;
+        axios
+          .post(`${BASE_URL}/auth/refresh`, {}, { withCredentials: true })
+          .then(({ data }) => {
+            if (data?.success && data?.jwtToken) {
+              const previousRole = localStorage.getItem("role");
+              localStorage.setItem("token", data.jwtToken);
+              if (data.role) localStorage.setItem("role", data.role);
+              if (data.name) localStorage.setItem("name", data.name);
+              if (data.username) localStorage.setItem("username", data.username);
+              if (data.userId) localStorage.setItem("userId", String(data.userId));
+              if (data.avatar) {
+                localStorage.setItem("avatar", data.avatar);
+              } else {
+                localStorage.removeItem("avatar");
+              }
+              if (previousRole !== data.role) {
+                window.dispatchEvent(new Event("storage"));
+              }
+              window.dispatchEvent(new Event("avatarChange"));
+            }
+          })
+          .catch(() => {
+            // Non-blocking: keep existing token if refresh is temporarily unreachable
+          });
+
         return;
       }
 
@@ -58,6 +86,12 @@ const RefreshHandler: FC<RefreshHandlerProps> = ({ setIsAuthenticated, setIsLoad
           if (data.name)     localStorage.setItem("name",     data.name);
           if (data.username) localStorage.setItem("username", data.username);
           if (data.userId)   localStorage.setItem("userId",   String(data.userId));
+          if (data.avatar) {
+            localStorage.setItem("avatar", data.avatar);
+          } else {
+            localStorage.removeItem("avatar");
+          }
+          window.dispatchEvent(new Event("avatarChange"));
           setIsAuthenticated(true);
         } else {
           setIsAuthenticated(false);

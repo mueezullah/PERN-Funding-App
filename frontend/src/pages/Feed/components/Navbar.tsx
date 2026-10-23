@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Search,
-  MessageCircle,
   PlusSquare,
   Bell,
   User,
@@ -21,6 +20,7 @@ import {
 } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { CreateThreadModal } from "./CreateThreadModal";
+import { SearchBar } from "./SearchBar";
 import { Link } from "react-router-dom";
 
 export function Navbar({
@@ -31,6 +31,7 @@ export function Navbar({
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isCreateDropdownOpen, setIsCreateDropdownOpen] = useState(false);
   const [isThreadModalOpen, setIsThreadModalOpen] = useState(false);
@@ -88,6 +89,8 @@ export function Navbar({
     localStorage.removeItem("role");
     localStorage.removeItem("username");
     localStorage.removeItem("userId");
+    localStorage.removeItem("avatar");
+    window.dispatchEvent(new Event("avatarChange"));
     if (setIsAuthenticated) setIsAuthenticated(false);
     navigate("/");
   };
@@ -117,13 +120,37 @@ export function Navbar({
         navigate(`/user/${username}`);
       },
     },
-    { label: "Edit Avatar", icon: Shirt },
-    { label: "Drafts", icon: FileText },
-    { label: "Achievements", icon: Trophy },
-    { label: "Campaigns", icon: CircleDollarSign },
-    { label: "Premium", icon: Shield },
-    { label: "Display Mode", icon: ToggleLeft },
-    { label: "Settings", icon: SettingsIcon },
+    ...(role === "fundraiser" || role === "admin"
+      ? [
+          {
+            label: "Creator Dashboard",
+            icon: CircleDollarSign,
+            action: () => {
+              setIsProfileDropdownOpen(false);
+              navigate("/creator/dashboard");
+            },
+          },
+        ]
+      : []),
+    ...(role === "admin"
+      ? [
+          {
+            label: "Admin Dashboard",
+            icon: Shield,
+            action: () => {
+              setIsProfileDropdownOpen(false);
+              navigate("/admin/dashboard");
+            },
+          },
+        ]
+      : []),
+    // Non-working / placeholder options commented out:
+    // { label: "Edit Avatar", icon: Shirt },
+    // { label: "Drafts", icon: FileText },
+    // { label: "Achievements", icon: Trophy },
+    // { label: "Premium", icon: Shield },
+    // { label: "Display Mode", icon: ToggleLeft },
+    // { label: "Settings", icon: SettingsIcon },
   ];
 
   return (
@@ -138,29 +165,24 @@ export function Navbar({
 
         <div className="shrink-0 ml-4 w-auto md:w-64 text-xl md:text-2xl font-extrabold tracking-tight text-slate-900 flex items-center">
           <Link to="/feed">
-            FUNDME<span className="text-indigo-600">.</span>
+            OnlyFunds<span className="text-indigo-600">.</span>
           </Link>
         </div>
 
         <div className="flex-1 flex justify-center px-4">
-          <div className="relative items-center w-full max-w-xl hidden sm:flex group">
-            <input
-              type="text"
-              placeholder="Search campaigns, posts, and people..."
-              className="w-full h-10 pl-11 pr-4 bg-slate-100/80 rounded-full text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 border border-transparent focus:border-indigo-500/30 focus:bg-white transition-all shadow-inner"
-            />
-            <Search className="absolute left-4 w-4 h-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" />
+          <div className="w-full max-w-xl hidden sm:flex justify-center">
+            <SearchBar />
           </div>
-          <button className="sm:hidden p-2 text-slate-600 ml-auto">
+          <button
+            className="sm:hidden p-2 text-slate-600 hover:text-indigo-600 ml-auto transition-colors"
+            onClick={() => setIsMobileSearchOpen(true)}
+            aria-label="Open search"
+          >
             <Search className="w-5 h-5" />
           </button>
         </div>
 
         <div className="shrink-0 mr-4 flex justify-end items-center space-x-2 md:space-x-3 text-slate-600">
-          <button className="p-2 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors hidden sm:block">
-            <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
-          </button>
-
           {/* Create Dropdown */}
           <div className="relative" ref={createDropdownRef}>
             <button
@@ -302,6 +324,18 @@ export function Navbar({
             <div className="flex-1 overflow-y-auto bg-slate-50/50">
               <Sidebar />
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Search Overlay Modal */}
+      {isMobileSearchOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-60 p-4 sm:hidden flex flex-col items-center">
+          <div className="w-full mt-2">
+            <SearchBar
+              isMobileOpen={true}
+              onCloseMobile={() => setIsMobileSearchOpen(false)}
+            />
           </div>
         </div>
       )}

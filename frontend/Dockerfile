@@ -11,6 +11,12 @@ RUN npm install
 # Copy the rest of the frontend code
 COPY . .
 
+# Build arguments for Vite client bundle
+ARG VITE_BASE_API_URL
+ARG VITE_STRIPE_PUBLISHABLE_KEY
+ENV VITE_BASE_API_URL=$VITE_BASE_API_URL
+ENV VITE_STRIPE_PUBLISHABLE_KEY=$VITE_STRIPE_PUBLISHABLE_KEY
+
 # Build the production bundle
 RUN npm run build
 

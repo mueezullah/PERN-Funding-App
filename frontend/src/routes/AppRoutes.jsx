@@ -15,12 +15,13 @@ import Feed from "../pages/Feed/FeedMain";
 import AdminDashboard from "../pages/Admin/AdminDashboard";
 import Landing from "../pages/Home/LandingMain";
 import CreateCampaignModal from "../pages/CreatorDashboard/CreateCampaignModal";
-import Campaigns from "../pages/CreatorDashboard/Campaigns";
+import CreatorDashboard from "../pages/CreatorDashboard/CreatorDashboard";
 import { RootLayout as ProfileRootLayout } from "../pages/Profile/RootLayout";
 import { ProfileView } from "../pages/Profile/ProfileView";
 import KYCVerification from "../pages/KYC/KYCVerification";
 import CampaignDetail from "../pages/Detail/CampaignDetail";
 import PostDetail from "../pages/Detail/PostDetail";
+import ExplorePage from "../pages/Feed/ExplorePage";
 
 const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
   
@@ -83,6 +84,18 @@ const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
           />
         }
       />
+
+      <Route
+        path="/explore"
+        element={
+          <PrivateRoute
+            element={<ExplorePage setIsAuthenticated={setIsAuthenticated} />}
+            isAuthenticated={isAuthenticated}
+            isLoading={isLoading}
+          />
+        }
+      />
+
 
       {/* Detail pages */}
       <Route
@@ -151,7 +164,7 @@ const AppRoutes = ({ isAuthenticated, setIsAuthenticated, isLoading }) => {
         path="/creator/dashboard"
         element={
           <RoleRoute
-            element={<Campaigns />}
+            element={<CreatorDashboard setIsAuthenticated={setIsAuthenticated} />}
             allowedRoles={["fundraiser", "admin"]}
             isAuthenticated={isAuthenticated}
             isLoading={isLoading}

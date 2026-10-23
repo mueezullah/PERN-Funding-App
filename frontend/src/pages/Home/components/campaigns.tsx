@@ -66,13 +66,13 @@ export function Campaigns() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="text-amber-600 text-sm font-medium uppercase tracking-wider">
+          <span className="inline-block px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-blue-50 text-brand-deep border border-blue-100">
             Featured Campaigns
           </span>
-          <h2 className="text-4xl lg:text-5xl mt-3 mb-6 font-extrabold text-slate-900">
-            Discover <span className="text-amber-500">Amazing Projects</span>
+          <h2 className="text-4xl lg:text-5xl mt-4 mb-6 font-extrabold text-slate-900 tracking-tight">
+            Discover <span className="text-brand">Amazing Projects</span>
           </h2>
-          <p className="text-xl text-slate-600">
+          <p className="text-xl text-slate-600 leading-relaxed">
             Support innovative ideas and be part of something extraordinary. Browse through our curated selection of trending campaigns.
           </p>
         </div>
@@ -85,69 +85,73 @@ export function Campaigns() {
             return (
               <div
                 key={campaign.id}
-                className="group bg-white rounded-3xl overflow-hidden shadow-lg border border-slate-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
+                className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-slate-200 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
               >
-                {/* Campaign Image */}
-                <div className="relative overflow-hidden h-56">
-                  <ImageWithFallback
-                    src={campaign.image}
-                    alt={campaign.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute top-4 left-4">
-                    <span className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-sm font-medium text-slate-700">
-                      {campaign.category}
-                    </span>
+                <div>
+                  {/* Campaign Image */}
+                  <div className="relative overflow-hidden h-52">
+                    <ImageWithFallback
+                      src={campaign.image}
+                      alt={campaign.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-4 left-4">
+                      <span className="px-3 py-1 bg-brand-dark/85 backdrop-blur-md rounded-full text-xs font-semibold text-white shadow-sm">
+                        {campaign.category}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Campaign Content */}
+                  <div className="p-6 space-y-4">
+                    <h3 className="text-lg font-bold text-slate-900 line-clamp-2 group-hover:text-brand transition-colors">
+                      {campaign.title}
+                    </h3>
+                    <p className="text-slate-600 text-sm line-clamp-2 leading-relaxed">
+                      {campaign.description}
+                    </p>
+
+                    {/* Progress */}
+                    <div className="space-y-2 pt-2">
+                      <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                        <div
+                          className="bg-brand h-2 rounded-full transition-all duration-500"
+                          style={{ width: `${Math.min(progressPercentage, 100)}%` }}
+                        ></div>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-lg font-extrabold text-slate-900">
+                          {formatCurrency(campaign.raised)}
+                        </span>
+                        <span className="text-xs text-slate-500">
+                          of {formatCurrency(campaign.goal)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                        <Users className="w-4 h-4 text-slate-400" />
+                        <span>{campaign.backers.toLocaleString()} backers</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                        <Clock className="w-4 h-4 text-slate-400" />
+                        <span>{campaign.daysLeft} days left</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-xs text-brand font-semibold">
+                        <TrendingUp className="w-4 h-4" />
+                        <span>{Math.round(progressPercentage)}%</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Campaign Content */}
-                <div className="p-6 space-y-4">
-                  <h3 className="text-xl font-bold text-slate-900 line-clamp-2 group-hover:text-amber-600 transition-colors">
-                    {campaign.title}
-                  </h3>
-                  <p className="text-slate-600 text-sm line-clamp-2">
-                    {campaign.description}
-                  </p>
-
-                  {/* Progress */}
-                  <div className="space-y-2">
-                    <div className="w-full bg-slate-100 rounded-full h-2.5">
-                      <div
-                        className="bg-amber-400 h-2.5 rounded-full transition-all"
-                        style={{ width: `${Math.min(progressPercentage, 100)}%` }}
-                      ></div>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-xl font-extrabold text-slate-900">
-                        {formatCurrency(campaign.raised)}
-                      </span>
-                      <span className="text-slate-500">
-                        of {formatCurrency(campaign.goal)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Stats */}
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                    <div className="flex items-center gap-1.5 text-sm text-slate-600">
-                      <Users className="w-4 h-4" />
-                      <span>{campaign.backers.toLocaleString()}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-sm text-slate-600">
-                      <Clock className="w-4 h-4" />
-                      <span>{campaign.daysLeft} days left</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-sm text-amber-600 font-medium">
-                      <TrendingUp className="w-4 h-4" />
-                      <span>{Math.round(progressPercentage)}%</span>
-                    </div>
-                  </div>
-
-                  {/* CTA Button */}
+                {/* CTA Button */}
+                <div className="px-6 pb-6">
                   <button
                     onClick={() => navigate("/login")}
-                    className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-full transition-all font-semibold shadow-sm hover:shadow active:scale-95"
+                    className="w-full bg-brand hover:bg-brand-deep text-white py-2.5 rounded-full transition-all font-semibold shadow-sm hover:shadow active:scale-95 text-sm"
                   >
                     Back This Project
                   </button>
@@ -161,7 +165,7 @@ export function Campaigns() {
         <div className="text-center mt-12">
           <button
             onClick={() => navigate("/login")}
-            className="text-lg px-8 py-3 border-2 border-slate-300 rounded-full hover:border-amber-400 hover:text-amber-600 text-slate-700 transition-colors font-medium"
+            className="text-base px-8 py-3 border-2 border-slate-300 rounded-full hover:border-brand hover:text-brand text-slate-700 transition-colors font-semibold"
           >
             View All Campaigns
           </button>

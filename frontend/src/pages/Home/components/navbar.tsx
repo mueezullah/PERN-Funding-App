@@ -29,11 +29,11 @@ export function Navbar({ isAuthenticated }: { isAuthenticated: boolean }) {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center gap-2.5">
-            <div className="relative bg-slate-900 p-2 rounded-full ring-2 ring-amber-400 ring-offset-2">
-              <Wallet className="w-5 h-5 text-amber-400" />
+            <div className="relative bg-brand-dark p-2 rounded-full ring-2 ring-brand ring-offset-2">
+              <Wallet className="w-5 h-5 text-brand" />
             </div>
             <span className="text-xl font-extrabold tracking-tight text-slate-900">
-              Fund<span className="text-amber-500">ME</span>
+              Only<span className="text-brand">Funds</span>
             </span>
           </div>
 
@@ -46,7 +46,7 @@ export function Navbar({ isAuthenticated }: { isAuthenticated: boolean }) {
                 className="group relative text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors py-1"
               >
                 {link.label}
-                <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-amber-400 transition-all duration-200 group-hover:w-full" />
+                <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-brand transition-all duration-200 group-hover:w-full" />
               </a>
             ))}
           </div>
@@ -61,7 +61,7 @@ export function Navbar({ isAuthenticated }: { isAuthenticated: boolean }) {
             </Link>
             <Link
               to="/signup"
-              className="bg-amber-400 text-slate-900 text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-amber-300 transition-all shadow-sm hover:shadow active:scale-95 flex items-center gap-1.5"
+              className="bg-brand text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-brand-deep transition-all shadow-sm hover:shadow active:scale-95 flex items-center gap-1.5"
             >
               Sign up <ArrowRight className="w-4 h-4" />
             </Link>
@@ -105,7 +105,7 @@ export function Navbar({ isAuthenticated }: { isAuthenticated: boolean }) {
               </button>
               <button
                 onClick={() => navigate("/signup")}
-                className="w-full bg-amber-400 hover:bg-amber-300 text-slate-900 text-sm font-semibold px-4 py-2.5 rounded-full transition-colors flex items-center justify-center gap-1.5"
+                className="w-full bg-brand hover:bg-brand-deep text-white text-sm font-semibold px-4 py-2.5 rounded-full transition-colors flex items-center justify-center gap-1.5"
               >
                 Sign up <ArrowRight className="w-4 h-4" />
               </button>

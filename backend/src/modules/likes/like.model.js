@@ -4,13 +4,11 @@ export const toggle = async (userId, targetType, targetId) => {
   const uId = parseInt(userId, 10);
   const tId = parseInt(targetId, 10);
 
-  const existing = await prisma.like.findUnique({
+  const existing = await prisma.like.findFirst({
     where: {
-      user_id_target_type_target_id: {
-        user_id: uId,
-        target_type: targetType,
-        target_id: tId,
-      },
+      user_id: uId,
+      target_type: targetType,
+      target_id: tId,
     },
   });
 

@@ -1,4 +1,5 @@
 import prisma from "../../config/prisma.js";
+import { getPresignedGetUrl } from "../../utils/s3.service.js";
 
 export const getPlatformAnalytics = async () => {
   const now = new Date();
@@ -129,7 +130,7 @@ export const getPlatformAnalytics = async () => {
     where: { status: "completed" },
     include: {
       donor: {
-        select: { id: true, name: true, username: true, email: true },
+        select: { id: true, name: true, username: true, email: true, avatar_url: true },
       },
       campaign: { select: { id: true, title: true } },
     },
@@ -137,17 +138,19 @@ export const getPlatformAnalytics = async () => {
     take: 8,
   });
 
-  const formattedRecentDonations = recentDonations.map((d) => ({
-    id: d.id,
-    amount: parseFloat(d.amount.toString()),
-    created_at: d.created_at,
-    donor_name: d.donor?.name || "Anonymous",
-    donor_username: d.donor?.username || "",
-    donor_email: d.donor?.email || "",
-    donor_avatar: d.donor?.avatar_url || "",
-    campaign_id: d.campaign?.id,
-    campaign_title: d.campaign?.title || "Direct Contribution",
-  }));
+  const formattedRecentDonations = await Promise.all(
+    recentDonations.map(async (d) => ({
+      id: d.id,
+      amount: parseFloat(d.amount.toString()),
+      created_at: d.created_at,
+      donor_name: d.donor?.name || "Anonymous",
+      donor_username: d.donor?.username || "",
+      donor_email: d.donor?.email || "",
+      donor_avatar: (await getPresignedGetUrl(d.donor?.avatar_url)) || "",
+      campaign_id: d.campaign?.id,
+      campaign_title: d.campaign?.title || "Direct Contribution",
+    }))
+  );
 
   // 6. Monthly Trends (Past 6 Months)
   const monthlyTrends = [];
@@ -214,6 +217,49 @@ export const getPlatformAnalytics = async () => {
     })
   );
 
+  // 7. Platform Donation Tiers Distribution
+  const donationTiers = [
+    { label: "Micro ($1 - $25)", range: "1-25", count: 0, totalAmount: 0, color: "#38bdf8" },
+    { label: "Standard ($25 - $100)", range: "25-100", count: 0, totalAmount: 0, color: "#00aff0" },
+    { label: "Enthusiast ($100 - $500)", range: "100-500", count: 0, totalAmount: 0, color: "#018cf1" },
+    { label: "VIP ($500+)", range: "500+", count: 0, totalAmount: 0, color: "#0271c2" },
+  ];
+
+  const allCompletedPlatformDonations = await prisma.donation.findMany({
+    where: { status: "completed" },
+    select: { amount: true },
+  });
+
+  allCompletedPlatformDonations.forEach((d) => {
+    const amt = parseFloat(d.amount.toString());
+    if (amt <= 25) {
+      donationTiers[0].count += 1;
+      donationTiers[0].totalAmount += amt;
+    } else if (amt <= 100) {
+      donationTiers[1].count += 1;
+      donationTiers[1].totalAmount += amt;
+    } else if (amt <= 500) {
+      donationTiers[2].count += 1;
+      donationTiers[2].totalAmount += amt;
+    } else {
+      donationTiers[3].count += 1;
+      donationTiers[3].totalAmount += amt;
+    }
+  });
+
+  const tiersWithPercentages = donationTiers.map((tier) => ({
+    ...tier,
+    totalAmount: Math.round(tier.totalAmount * 100) / 100,
+    percentageOfDonations:
+      totalDonationsCount > 0
+        ? Math.round((tier.count / totalDonationsCount) * 100)
+        : 0,
+    percentageOfRevenue:
+      totalRaised > 0
+        ? Math.round((tier.totalAmount / totalRaised) * 100)
+        : 0,
+  }));
+
   return {
     financials: {
       totalRaised,
@@ -244,6 +290,7 @@ export const getPlatformAnalytics = async () => {
       likes: totalLikes,
     },
     trends: sanitizedTrends,
+    donationTiers: tiersWithPercentages,
     recentDonations: formattedRecentDonations,
   };
 };

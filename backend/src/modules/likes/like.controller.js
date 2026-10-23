@@ -1,14 +1,19 @@
 import * as Like from "./like.model.js";
-
-const asyncHandler = (fn) => (req, res, next) => {
-  Promise.resolve(fn(req, res, next)).catch(next);
-};
+import asyncHandler from "../../middlewares/asyncHandler.js";
 
 export const toggleLike = asyncHandler(async (req, res) => {
-  const { targetType, targetId } = req.body;
-  const userId = req.user.id;
+  const targetType = req.body.targetType || req.body.target_type;
+  const targetId = req.body.targetId || req.body.target_id;
+  const userId = req.user?.id || req.user?.userId;
 
-  if (!targetType || !targetId) {
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: "User authentication required"
+    });
+  }
+
+  if (!targetType || targetId === undefined || targetId === null) {
     return res.status(400).json({
       success: false,
       message: "targetType and targetId are required"
@@ -22,7 +27,8 @@ export const toggleLike = asyncHandler(async (req, res) => {
     });
   }
 
-  const numericTargetId = parseInt(targetId, 10);
+  const rawTargetId = typeof targetId === "string" ? targetId.replace(/\D/g, "") : targetId;
+  const numericTargetId = parseInt(rawTargetId, 10);
   if (isNaN(numericTargetId)) {
     return res.status(400).json({
       success: false,
@@ -43,17 +49,19 @@ export const toggleLike = asyncHandler(async (req, res) => {
 });
 
 export const getLikeStatus = asyncHandler(async (req, res) => {
-  const { targetType, targetId } = req.query;
-  const userId = req.user?.id;
+  const targetType = req.query.targetType || req.query.target_type;
+  const targetId = req.query.targetId || req.query.target_id;
+  const userId = req.user?.id || req.user?.userId;
 
-  if (!targetType || !targetId) {
+  if (!targetType || targetId === undefined || targetId === null) {
     return res.status(400).json({
       success: false,
       message: "targetType and targetId query parameters are required"
     });
   }
 
-  const numericTargetId = parseInt(targetId, 10);
+  const rawTargetId = typeof targetId === "string" ? targetId.replace(/\D/g, "") : targetId;
+  const numericTargetId = parseInt(rawTargetId, 10);
   if (isNaN(numericTargetId)) {
     return res.status(400).json({
       success: false,

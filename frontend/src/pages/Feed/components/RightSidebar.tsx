@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, UserPlus, Heart, BarChart3, ChevronRight } from 'lucide-react';
+import { TrendingUp, UserPlus } from 'lucide-react';
 import { ImageWithFallback } from '../../../components/ImageWithFallback';
 
 export function RightSidebar() {
@@ -16,62 +16,8 @@ export function RightSidebar() {
 
   return (
     <div className="w-full py-8 pr-4 flex flex-col space-y-6">
-      
-      {/* Analytics Card */}
-      <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/60 transition-shadow">
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-indigo-50/50 rounded-xl text-indigo-600 border border-indigo-100">
-              <BarChart3 className="w-5 h-5" />
-            </div>
-            <h3 className="font-bold text-[15px] text-slate-900 tracking-tight">Your Impact</h3>
-          </div>
-          <button className="text-slate-400 hover:text-indigo-600 transition-colors"><ChevronRight className="w-4 h-4" /></button>
-        </div>
-        <div className="space-y-3">
-          <div>
-            <div className="flex justify-between text-sm mb-2">
-              <span className="font-medium text-slate-500">Total Donated</span>
-              <span className="font-bold text-slate-900">$1,450</span>
-            </div>
-            <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-              <div className="bg-gradient-to-r from-indigo-500 to-violet-500 h-full rounded-full" style={{ width: '65%' }}></div>
-            </div>
-          </div>
-        </div>        
-      </div>
 
-      {/* Trending */}
-      <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/60 transition-shadow">
-        <div className="flex items-center space-x-2 mb-5">
-          <TrendingUp className="w-5 h-5 text-indigo-500" />
-          <h3 className="font-bold text-[15px] text-slate-900 tracking-tight">Trending</h3>
-        </div>
-        <div className="space-y-5">
-          {trending.map((item) => (
-            <div key={item.id} className="group cursor-pointer">
-              <p className="font-semibold text-[14px] text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight mb-1">{item.title}</p>
-              <p className="text-[13px] font-medium text-slate-500">{item.context}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/60 transition-shadow">
-        <div className="flex items-center space-x-2 mb-5">
-          <TrendingUp className="w-5 h-5 text-indigo-500" />
-          <h3 className="font-bold text-[15px] text-slate-900 tracking-tight">Trending</h3>
-        </div>
-        <div className="space-y-5">
-          {trending.map((item) => (
-            <div key={item.id} className="group cursor-pointer">
-              <p className="font-semibold text-[14px] text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight mb-1">{item.title}</p>
-              <p className="text-[13px] font-medium text-slate-500">{item.context}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Suggested Users */}
+      {/* Who to Follow */}
       <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/60 transition-shadow">
         <div className="flex items-center space-x-2 mb-5">
           <UserPlus className="w-5 h-5 text-indigo-500" />
@@ -90,6 +36,22 @@ export function RightSidebar() {
               <button className="text-[13px] font-bold text-slate-900 hover:text-white bg-slate-100 hover:bg-slate-900 px-4 py-1.5 rounded-full transition-colors border border-transparent">
                 Follow
               </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Trending */}
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/60 transition-shadow">
+        <div className="flex items-center space-x-2 mb-5">
+          <TrendingUp className="w-5 h-5 text-indigo-500" />
+          <h3 className="font-bold text-[15px] text-slate-900 tracking-tight">Trending</h3>
+        </div>
+        <div className="space-y-5">
+          {trending.map((item) => (
+            <div key={item.id} className="group cursor-pointer">
+              <p className="font-semibold text-[14px] text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight mb-1">{item.title}</p>
+              <p className="text-[13px] font-medium text-slate-500">{item.context}</p>
             </div>
           ))}
         </div>

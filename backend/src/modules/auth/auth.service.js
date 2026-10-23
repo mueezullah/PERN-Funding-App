@@ -1,6 +1,7 @@
 import * as UserModel from "../users/user.model.js";
 import { hashPassword, comparePassword } from "../../utils/hash.js";
 import { generateToken, generateRefreshToken } from "../../utils/jwt.js";
+import { getPresignedGetUrl } from "../../utils/s3.service.js";
 
 export const signupUser = async (name, username, email, password) => {
   const existingUserEmail = await UserModel.findByEmail(email);
@@ -25,6 +26,7 @@ export const signupUser = async (name, username, email, password) => {
 
   // Determine redirection path based on role
   const redirectTo = role === "admin" ? "/admin/dashboard" : "/feed";
+  const avatar = (await getPresignedGetUrl(newUser.avatar_url)) || "";
 
   return {
     success: true,
@@ -38,7 +40,7 @@ export const signupUser = async (name, username, email, password) => {
       name: newUser.name,
       username: newUser.username,
       role,
-      avatar: newUser.avatar_url || "",
+      avatar,
       kyc_verified,
       id: newUser.id,
       redirectTo,
@@ -84,7 +86,7 @@ export const loginUser = async (email, password) => {
       name: user.name,
       username: user.username,
       role: user.role,
-      avatar: user.avatar_url || "",
+      avatar: (await getPresignedGetUrl(user.avatar_url)) || "",
       kyc_verified: user.kyc_verified,
       id: user.id,
       redirectTo,
@@ -93,7 +95,13 @@ export const loginUser = async (email, password) => {
 };
 
 export const fetchAllUsers = async () => {
-  const users = await UserModel.findAll();
+  const rawUsers = await UserModel.findAll();
+  const users = await Promise.all(
+    rawUsers.map(async (u) => ({
+      ...u,
+      avatar_url: await getPresignedGetUrl(u.avatar_url),
+    }))
+  );
   return {
     success: true,
     users,
