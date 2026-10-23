@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Plus,
@@ -74,16 +74,18 @@ export function ProfileFeed({
   name,
   username,
   isOwnProfile = true,
+  onPostCountChange,
 }: {
   name?: string;
   username?: string;
   isOwnProfile?: boolean;
+  onPostCountChange?: (delta: number) => void;
 }) {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = searchParams.get("tab") || "Posts";
 
-  const sectionData = [
+  const sectionData = useMemo(() => [
     { key: "Posts", title: "Posts" },
     { key: "Campaigns", title: "Campaigns" },
     ...(isOwnProfile
@@ -93,7 +95,7 @@ export function ProfileFeed({
         ]
       : []),
     { key: "About", title: "About" },
-  ];
+  ], [isOwnProfile]);
 
   const [activeTab, setActiveTab] = useState(
     sectionData.some((s) => s.key.toLowerCase() === initialTab.toLowerCase())
@@ -138,7 +140,7 @@ export function ProfileFeed({
       const matchedKey = sectionData.find((s) => s.key.toLowerCase() === tabParam.toLowerCase())!.key;
       setActiveTab(matchedKey);
     }
-  }, [searchParams, isOwnProfile]);
+  }, [searchParams, isOwnProfile, sectionData]);
 
   const handleTabChange = (tabKey: string) => {
     setActiveTab(tabKey);
@@ -200,6 +202,7 @@ export function ProfileFeed({
       if (res.ok && data.success) {
         setPosts((prev) => prev.filter((p) => p.id !== postId));
         showMinimalToast("Post Deleted");
+        onPostCountChange?.(-1);
       } else {
         handleError(data.message || "Failed to delete post");
       }
@@ -1337,6 +1340,7 @@ export function ProfileFeed({
               },
               ...prevPosts,
             ]);
+            onPostCountChange?.(1);
           }}
         />
       )}

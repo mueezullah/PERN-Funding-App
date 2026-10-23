@@ -16,7 +16,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Link } from "react-router-dom";
 import { handleSuccess, handleError } from "../../../utils";
 
-const CampaignsTab = ({ campaigns = [], campaignsLoading = false, campaignsError = null, onRefresh }) => {
+const CampaignsTab = ({ campaigns = [], campaignsLoading = false, _campaignsError = null, onRefresh }) => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [actionId, setActionId] = useState(null);

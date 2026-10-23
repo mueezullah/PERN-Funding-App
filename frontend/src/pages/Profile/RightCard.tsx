@@ -43,15 +43,13 @@ export function ProfileRightSidebar({
   const [modalType, setModalType] = useState<"followers" | "following" | null>(null);
   const [resolvedUserId, setResolvedUserId] = useState<number | null>(propUserId || profileStats?.id || null);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
-  const [displayNameState, setDisplayNameState] = useState(name || "User");
+  const [displayNameOverride, setDisplayNameOverride] = useState<string | null>(null);
 
   const rawAvatar = profileStats?.avatarUrl || profileStats?.avatar_url || profileStats?.avatar;
   const avatar = isOwnProfile ? (rawAvatar || localStorage.getItem("avatar")) : rawAvatar;
 
-  // Keep displayNameState in sync with prop changes
-  useEffect(() => {
-    setDisplayNameState(name || "User");
-  }, [name]);
+  // Derive display name: use override from edit modal if set, otherwise fall back to prop
+  const displayNameState = displayNameOverride ?? (name || "User");
 
   const displayName = isOwnProfile
     ? formatNameWithRole(displayNameState, profileStats?.role)
@@ -271,7 +269,7 @@ export function ProfileRightSidebar({
           currentName={displayNameState}
           currentUsername={username || ""}
           onSuccess={(updatedData) => {
-            setDisplayNameState(updatedData.name);
+            setDisplayNameOverride(updatedData.name);
             onProfileUpdate?.(updatedData);
           }}
         />
