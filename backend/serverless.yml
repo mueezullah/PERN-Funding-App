@@ -9,9 +9,42 @@ provider:
   name: aws
   runtime: nodejs20.x
   region: us-east-1
+  httpApi:
+    cors:
+      allowedOrigins:
+        - 'https://fundme-dev.netlify.app'
+        - 'http://localhost:5173'
+        - 'http://localhost:3000'
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+        - X-Requested-With
+        - Accept
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - PATCH
+        - OPTIONS
+      allowCredentials: true
   environment:
+    NODE_ENV: production
+    CLIENT_URL: ${param:CLIENT_URL, env:CLIENT_URL, "https://fundme-dev.netlify.app"}
+    JWT_SECRET: ${param:JWT_SECRET, env:JWT_SECRET, ""}
+    REFRESH_TOKEN_SECRET: ${param:REFRESH_TOKEN_SECRET, env:REFRESH_TOKEN_SECRET, ""}
+    JWT_EXPIRES_IN: "24h"
+    DB_HOST: ${param:DB_HOST, env:DB_HOST, ""}
+    DB_USER: ${param:DB_USER, env:DB_USER, ""}
+    DB_PORT: ${param:DB_PORT, env:DB_PORT, "5432"}
+    DB_PASSWORD: ${param:DB_PASSWORD, env:DB_PASSWORD, ""}
+    DB_NAME: ${param:DB_NAME, env:DB_NAME, ""}
+    DATABASE_URL: ${param:DATABASE_URL, env:DATABASE_URL, ""}
+    DIRECT_URL: ${param:DIRECT_URL, env:DIRECT_URL, ""}
+    STRIPE_SECRET_KEY: ${param:STRIPE_SECRET_KEY, env:STRIPE_SECRET_KEY, ""}
+    STRIPE_WEBHOOK_SECRET: ${param:STRIPE_WEBHOOK_SECRET, env:STRIPE_WEBHOOK_SECRET, ""}
+    AWS_S3_BUCKET_NAME: ${param:AWS_S3_BUCKET_NAME, env:AWS_S3_BUCKET_NAME, "fundme-media-staging"}
     MEDIA_BUCKET_STAGING: fundme-media-staging
-    # Didit KYC — set real values in Serverless Dashboard / CI secrets per stage
     DIDIT_API_KEY: ${param:DIDIT_API_KEY, env:DIDIT_API_KEY, env:DIDIT_API_CLIENT_ID, ""}
     DIDIT_WEBHOOK_SECRET: ${param:DIDIT_WEBHOOK_SECRET, env:DIDIT_WEBHOOK_SECRET, ""}
     DIDIT_WORKFLOW_ID: ${param:DIDIT_WORKFLOW_ID, env:DIDIT_WORKFLOW_ID, ""}
@@ -24,9 +57,6 @@ provider:
             - s3:GetObject
             - s3:DeleteObject
           Resource: arn:aws:s3:::fundme-media-${sls:stage}/*
-  # Uncomment to easily set up a custom domain. Read the docs for more details:
-  # https://www.serverless.com/framework/docs/providers/aws/guide/domains
-  # domain: api.example.com
 
 package:
   patterns:

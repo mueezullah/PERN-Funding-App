@@ -22,7 +22,8 @@ const DB_PORT = process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432;
 const DB_PASSWORD = process.env.DB_PASSWORD;
 const DB_NAME = process.env.DB_NAME || "pern_auth";
 
-const CLIENT_URL = process.env.CLIENT_URL || "fundme-dev.netlify.app";
+const rawClientUrl = process.env.CLIENT_URL || "https://fundme-dev.netlify.app";
+const CLIENT_URL = rawClientUrl.startsWith("http") ? rawClientUrl : `https://${rawClientUrl}`;
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
