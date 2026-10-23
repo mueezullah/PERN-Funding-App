@@ -251,14 +251,14 @@ PORT=8080
 JWT_SECRET=YourSuperSecretJWTKeyHere
 
 # PostgreSQL Database Configuration (Neon PostgreSQL)
-DB_HOST=ep-purple-boat-amkjk9zr-pooler.c-5.us-east-1.aws.neon.tech
+DB_HOST=ep-your-project-id-pooler.us-east-1.aws.neon.tech
 DB_USER=neondb_owner
 DB_PASSWORD=your_db_password
 DB_NAME=neondb
 DB_PORT=5432
 
 # Prisma Database URL
-DATABASE_URL="postgresql://neondb_owner:your_db_password@ep-purple-boat-amkjk9zr-pooler.c-5.us-east-1.aws.neon.tech/neondb?sslmode=require"
+DATABASE_URL="postgresql://neondb_owner:your_db_password@ep-your-project-id-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require"
 
 # Stripe Secret Keys & Webhooks
 STRIPE_SECRET_KEY=sk_test_YOUR_STRIPE_SECRET_KEY

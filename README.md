@@ -148,18 +148,34 @@ Users ─┬─→ Campaigns ──→ Donations
 
 ---
 
-## 🔮 Planned & In Progress
+### Implemented Platform Features
+- [x] **JWT Authentication & RBAC**: `user`, `fundraiser`, `moderator`, `admin` roles with silent token refresh.
+- [x] **Full Campaign Lifecycle**: Create, edit, soft-delete, auto-status updates (`active`, `completed`, `ended`).
+- [x] **Stripe Payment Gateway**: PaymentIntents, idempotent transactions, database atomic updates, and webhook reconciliation.
+- [x] **Identity Verification (KYC)**: Didit KYC verification flow with admin approval/rejection pipeline.
+- [x] **Media Uploads (AWS S3)**: Pre-signed upload and download URLs for avatars, campaign banners, and post media.
+- [x] **Social Feed & Engagements**: Posts, polymorphic likes and comments, user follows, bookmarks.
+- [x] **Search & Explore**: Live search by query, category filtering, and trending campaigns.
+- [x] **Admin Analytics Dashboard**: Platform metrics, KYC queue, user roles management.
+- [x] **Creator Dashboard**: Campaign performance stats, backer analytics, payout tracker.
 
-| Feature | Status | Description |
-| :--- | :--- | :--- |
-| **Real-time Updates** | 🟡 Planned | WebSocket (Socket.io) integration for live campaign counters, donation notifications, and direct messaging |
-| **Communities** | 🟡 Planned | Dedicated community spaces for campaign backers with threaded discussions |
-| **KYC Document Upload** | 🟡 Planned | File upload flow for identity verification documents |
-| **Campaign Media Uploads** | 🟡 Planned | Image/video upload support for campaigns and posts (S3 or Cloudinary) |
-| **Email Notifications** | 🟡 Planned | Transactional emails for signup confirmation, donation receipts, and campaign updates |
-| **Search & Discovery** | 🟡 Planned | Full-text search across campaigns and users |
-| **Achievements & Badges** | 🔵 Future | Gamified milestones for top backers and active creators |
-| **AI Campaign Drafting** | 🔵 Future | AI-assisted campaign description and goal-setting |
+---
+
+## 🎓 College FYP Demo Guide & Credentials
+
+For examiners, evaluators, and demonstration purposes, the database includes preset accounts covering all three major workflows:
+
+| Role | Email | Password | Access / Dashboard |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `admin@onlyfunds.com` | `Password123!` | `/admin/dashboard` — Platform stats, KYC review & approvals |
+| **Verified Creator** | `creator@onlyfunds.com` | `Password123!` | `/creator/dashboard` — Campaign creation, updates, backer analytics |
+| **Backer / User** | `donor@onlyfunds.com` | `Password123!` | `/feed` — Social feed, backing projects via Stripe, commenting |
+
+### Recommended Demo Flow for FYP Presentation:
+1. **Public Landing & Discovery (`/`)**: Show the redesigned modern landing page with featured campaigns, trust indicators, and brand system.
+2. **Backer Experience (`/feed`)**: Log in as `donor@onlyfunds.com`. Browse campaigns, like/bookmark, interact with social feed posts, and make a live test donation using Stripe test cards (`4242 4242 4242 4242`).
+3. **Creator Experience (`/creator/dashboard`)**: Log in as `creator@onlyfunds.com`. Review the campaign progress, real-time analytics, and launch a new campaign.
+4. **KYC & Admin Governance (`/admin/dashboard`)**: Log in as `admin@onlyfunds.com`. Show platform analytics, inspect pending KYC applications, and approve/reject creators.
 
 ---
 
