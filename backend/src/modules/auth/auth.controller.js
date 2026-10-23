@@ -6,12 +6,14 @@ import { getPresignedGetUrl } from "../../utils/s3.service.js";
 
 // ─── Cookie config ──────────────────────────────────────────────────────────
 // httpOnly: JS cannot read this cookie (XSS protection)
-// secure: only sent over HTTPS in production
-// sameSite: 'strict' prevents CSRF
+// In production cross-origin setups (e.g. Netlify/Vercel frontend + Render/AWS API):
+// sameSite MUST be "none" and secure MUST be true, otherwise cross-site requests drop cookies.
+const isProduction = process.env.NODE_ENV === "production";
+
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "strict",
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
   maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days in ms
   path: "/",
 };
@@ -22,7 +24,12 @@ const setRefreshCookie = (res, token) => {
 };
 
 const clearRefreshCookie = (res) => {
-  res.clearCookie("refreshToken", { httpOnly: true, sameSite: "strict", path: "/" });
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    path: "/",
+  });
 };
 
 // ─── Controllers ────────────────────────────────────────────────────────────

@@ -24,6 +24,81 @@ function getApiKey() {
   return env.DIDIT_API_KEY;
 }
 
+export const diditStatusMap = {
+  Approved: "approved",
+  Declined: "declined",
+  "In Review": "in_review",
+  approved: "approved",
+  declined: "declined",
+  in_review: "in_review",
+  Pending: "pending",
+  pending: "pending",
+};
+
+/**
+ * Direct sync helper: Queries Didit's REST API for a session decision
+ * and updates the database record. Acts as a safety net when webhooks
+ * cannot reach local development or are delayed.
+ */
+export const syncDiditSession = async (sessionId) => {
+  if (!sessionId) return null;
+  try {
+    const apiKey = getApiKey();
+    let res = await fetch(`${DIDIT_BASE_URL}/session/${sessionId}/decision/`, {
+      method: "GET",
+      headers: { "x-api-key": apiKey },
+    });
+
+    if (!res.ok) {
+      res = await fetch(`${DIDIT_BASE_URL}/session/${sessionId}/`, {
+        method: "GET",
+        headers: { "x-api-key": apiKey },
+      });
+    }
+
+    if (!res.ok) {
+      console.warn(`[KYC Sync] Didit API returned HTTP ${res.status} for session ${sessionId}`);
+      return null;
+    }
+
+    const data = await res.json();
+    const rawStatus =
+      data.status ||
+      data.decision?.status ||
+      data.session?.status ||
+      (typeof data.decision === "string" ? data.decision : null);
+
+    const mappedStatus = diditStatusMap[rawStatus];
+    if (!mappedStatus) {
+      return null;
+    }
+
+    const document = data.kyc?.document ?? data.document ?? {};
+    const firstName = document.first_name || document.firstName || "";
+    const lastName = document.last_name || document.lastName || "";
+    const extractedName = [firstName, lastName].filter(Boolean).join(" ") || null;
+    const extractedDob = document.date_of_birth || document.dateOfBirth || null;
+    const documentNumber = document.document_number || document.documentNumber || null;
+
+    const updated = await prisma.kycVerification.update({
+      where: { didit_session_id: sessionId },
+      data: {
+        didit_status: mappedStatus,
+        extracted_name: extractedName,
+        extracted_dob: extractedDob,
+        document_number: documentNumber,
+        raw_response: data,
+      },
+    });
+
+    return updated;
+  } catch (err) {
+    console.warn(`[KYC Sync] Could not sync session ${sessionId}:`, err?.message || err);
+    return null;
+  }
+};
+
+
 // ─── Session creation ─────────────────────────────────────────────────────────
 
 /**
@@ -110,9 +185,22 @@ export const startKycSession = async (userId) => {
  * Returns the current KYC verification status for the logged-in user.
  */
 export const getKycStatus = async (userId) => {
-  const kyc = await prisma.kycVerification.findUnique({
+  let kyc = await prisma.kycVerification.findUnique({
     where: { user_id: userId },
   });
+
+  // If status is pending or in_review, attempt to sync directly with Didit
+  if (
+    kyc &&
+    (kyc.didit_status === "pending" || kyc.didit_status === "in_review") &&
+    kyc.didit_session_id
+  ) {
+    const updated = await syncDiditSession(kyc.didit_session_id);
+    if (updated) {
+      kyc = updated;
+    }
+  }
+
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { kyc_verified: true, role: true },
@@ -183,18 +271,6 @@ export const handleWebhookEvent = async (payload) => {
     return { ignored: true };
   }
 
-  // Map Didit status strings to our enum values
-  const diditStatusMap = {
-    Approved: "approved",
-    Declined: "declined",
-    "In Review": "in_review",
-    approved: "approved",
-    declined: "declined",
-    in_review: "in_review",
-    Pending: "pending",
-    pending: "pending",
-  };
-
   const mappedStatus = diditStatusMap[status];
   if (!mappedStatus) {
     console.warn(`[KYC Webhook] Unknown Didit status: "${status}" — skipping`);
@@ -254,6 +330,24 @@ export const handleWebhookEvent = async (payload) => {
  * Includes user details for the admin dashboard table.
  */
 export const getPendingKycRecords = async () => {
+  // Proactively sync any pending or in-review records directly with Didit
+  try {
+    const unapproved = await prisma.kycVerification.findMany({
+      where: {
+        didit_status: { in: ["pending", "in_review"] },
+        admin_status: "pending",
+      },
+    });
+
+    for (const item of unapproved) {
+      if (item.didit_session_id) {
+        await syncDiditSession(item.didit_session_id);
+      }
+    }
+  } catch (syncErr) {
+    console.warn("[KYC Sync] Failed to query Didit decision REST API:", syncErr?.message || syncErr);
+  }
+
   const records = await prisma.kycVerification.findMany({
     where: {
       didit_status: "approved", // Didit cleared them

@@ -42,12 +42,39 @@ app.use(express.json());
 
 // ─── CORS ────────────────────────────────────────────────────────────────────
 // credentials: true is REQUIRED for the browser to send the httpOnly
-// refresh-token cookie cross-origin. The origin must be explicit (not "*")
-// when credentials are enabled.
+// refresh-token cookie cross-origin.
+const configuredOrigins = (env.CLIENT_URL || "")
+  .split(",")
+  .map((url) => url.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+
+const defaultAllowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://localhost:8080",
+  "http://127.0.0.1:5173",
+];
+
+const allowedOrigins = Array.from(new Set([...configuredOrigins, ...defaultAllowedOrigins]));
+
 app.use(
   cors({
-    origin: env.CLIENT_URL,
-    credentials: true,           // allow cookies in cross-origin requests
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, server-to-server)
+      if (!origin) return callback(null, true);
+      
+      const normalizedOrigin = origin.replace(/\/$/, "");
+      if (
+        allowedOrigins.includes(normalizedOrigin) ||
+        process.env.NODE_ENV !== "production" ||
+        normalizedOrigin.endsWith(".netlify.app") ||
+        normalizedOrigin.endsWith(".vercel.app")
+      ) {
+        return callback(null, true);
+      }
+      return callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
+    credentials: true, // allow cookies in cross-origin requests
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })

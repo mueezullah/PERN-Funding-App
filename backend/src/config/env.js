@@ -15,6 +15,7 @@ if (missingEnvs.length > 0) {
 const PORT = process.env.PORT || 8080;
 const JWT_SECRET = process.env.JWT_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "24h";
 const DB_HOST = process.env.DB_HOST || "localhost";
 const DB_USER = process.env.DB_USER || "postgres";
 const DB_PORT = process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432;
@@ -42,6 +43,7 @@ export default {
   PORT,
   JWT_SECRET,
   REFRESH_TOKEN_SECRET,
+  JWT_EXPIRES_IN,
   DB_HOST,
   DB_USER,
   DB_PORT,

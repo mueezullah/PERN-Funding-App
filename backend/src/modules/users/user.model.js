@@ -34,7 +34,7 @@ export const getPostCountByUserId = async (userId) => {
   return await prisma.post.count({
     where: {
       user_id: parseInt(userId, 10),
-      status: "active",
+      status: { not: "deleted" },
     },
   });
 };
