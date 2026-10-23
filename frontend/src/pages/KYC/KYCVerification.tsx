@@ -53,6 +53,11 @@ export default function KYCVerification() {
           ? "verified"
           : `${data.didit_status}:${data.admin_status}`,
       );
+
+      if (data.role && data.role !== localStorage.getItem("role")) {
+        localStorage.setItem("role", data.role);
+        window.dispatchEvent(new Event("storage"));
+      }
     } catch (error) {
       setStatus("error");
       handleError(

@@ -56,6 +56,12 @@ export function ProfileView() {
     }
   };
 
+  const handlePostCountChange = (delta: number) => {
+    setProfileStats((prev) =>
+      prev ? { ...prev, posts: Math.max(0, (prev.posts ?? 0) + delta) } : prev
+    );
+  };
+
   return (
     <div className="w-full max-w-275 mx-auto flex gap-8">
       <div className="flex-1">
@@ -63,6 +69,7 @@ export function ProfileView() {
           name={profileStats?.name || name || undefined}
           username={username ?? undefined}
           isOwnProfile={isOwnProfile}
+          onPostCountChange={handlePostCountChange}
         />
       </div>
       <div className="hidden xl:block w-75 shrink-0">

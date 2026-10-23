@@ -20,7 +20,7 @@ import { Link } from "react-router-dom";
 import CreatorStatCard from "./CreatorStatCard";
 import CreatorRevenueTrendChart from "./CreatorRevenueTrendChart";
 import CreatorCampaignsComparisonChart from "./CreatorCampaignsComparisonChart";
-import CreatorDonationTiersChart from "./CreatorDonationTiersChart";
+
 import CreatorEngagementChart from "./CreatorEngagementChart";
 
 interface CreatorOverviewTabProps {
@@ -86,7 +86,7 @@ const CreatorOverviewTab: React.FC<CreatorOverviewTabProps> = ({
       commentsReceived: 0,
     },
     trends = [],
-    donationTiers = [],
+    donationTiers: _donationTiers = [],
     recentDonations = [],
   } = analytics || {};
 
@@ -150,7 +150,7 @@ const CreatorOverviewTab: React.FC<CreatorOverviewTabProps> = ({
           icon={DollarSign}
           badgeText="Completed"
           badgeVariant="success"
-          accentColorClass="border-l-4 border-l-emerald-500"
+
           iconBgClass="bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400"
         />
 
@@ -161,7 +161,7 @@ const CreatorOverviewTab: React.FC<CreatorOverviewTabProps> = ({
           icon={Users}
           badgeText={financials.pendingCount > 0 ? `${financials.pendingCount} pending` : "100% settled"}
           badgeVariant="info"
-          accentColorClass="border-l-4 border-l-indigo-500"
+
           iconBgClass="bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400"
         />
 
@@ -172,7 +172,7 @@ const CreatorOverviewTab: React.FC<CreatorOverviewTabProps> = ({
           icon={Megaphone}
           badgeText={`${campaigns.funded} funded`}
           badgeVariant="warning"
-          accentColorClass="border-l-4 border-l-amber-500"
+
           iconBgClass="bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400"
         />
 
@@ -183,7 +183,7 @@ const CreatorOverviewTab: React.FC<CreatorOverviewTabProps> = ({
           icon={Heart}
           badgeText={`${community.commentsReceived} comments`}
           badgeVariant="outline"
-          accentColorClass="border-l-4 border-l-purple-500"
+
           iconBgClass="bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400"
         />
       </div>
@@ -195,13 +195,8 @@ const CreatorOverviewTab: React.FC<CreatorOverviewTabProps> = ({
         <CreatorCampaignsComparisonChart campaigns={campaigns.list} />
       </div>
 
-      {/* Row 2: Graph 3 (Backer Donation Tiers) & Graph 4 (Supporter Growth Velocity) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <CreatorDonationTiersChart
-          tiers={donationTiers}
-          totalRaised={financials.totalRaised}
-          totalDonationsCount={financials.totalDonationsCount}
-        />
+      {/* Row 2: Graph 4 (Supporter Growth Velocity) */}
+      <div className="grid grid-cols-1 gap-6">
         <CreatorEngagementChart data={trends} community={community} />
       </div>
 

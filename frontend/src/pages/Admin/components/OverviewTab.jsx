@@ -24,7 +24,7 @@ import KycAndCommunityCard from "./KycAndCommunityCard";
 import RecentDonationsTable from "./RecentDonationsTable";
 import api from "@/lib/axiosInstance";
 
-const OverviewTab = ({ users = [], campaigns = [], onNavigateTab }) => {
+const OverviewTab = ({ users = [], campaigns = [], _onNavigateTab }) => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -179,7 +179,6 @@ const OverviewTab = ({ users = [], campaigns = [], onNavigateTab }) => {
           icon={DollarSign}
           badgeText="Verified"
           badgeVariant="success"
-          accentColorClass="border-l-4 border-l-emerald-500"
           iconBgClass="bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400"
         />
 
@@ -190,7 +189,6 @@ const OverviewTab = ({ users = [], campaigns = [], onNavigateTab }) => {
           icon={CreditCard}
           badgeText={data.financials.pendingCount > 0 ? `${data.financials.pendingCount} pending` : "100% settled"}
           badgeVariant="info"
-          accentColorClass="border-l-4 border-l-indigo-500"
           iconBgClass="bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400"
         />
 
@@ -201,7 +199,6 @@ const OverviewTab = ({ users = [], campaigns = [], onNavigateTab }) => {
           icon={Megaphone}
           badgeText={`${data.campaigns.funded} funded`}
           badgeVariant="warning"
-          accentColorClass="border-l-4 border-l-amber-500"
           iconBgClass="bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400"
         />
 
@@ -212,7 +209,6 @@ const OverviewTab = ({ users = [], campaigns = [], onNavigateTab }) => {
           icon={ShieldCheck}
           badgeText={`${data.users.total > 0 ? Math.round((data.users.kycVerified / data.users.total) * 100) : 0}% KYC rate`}
           badgeVariant="outline"
-          accentColorClass="border-l-4 border-l-purple-500"
           iconBgClass="bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400"
         />
       </div>
@@ -231,7 +227,7 @@ const OverviewTab = ({ users = [], campaigns = [], onNavigateTab }) => {
           totalRaised={data.financials.totalRaised}
           totalDonationsCount={data.financials.totalDonationsCount}
         />
-        <KycAndCommunityCard users={data.users} engagement={data.engagement} />
+        <KycAndCommunityCard users={data.users} />
       </div>
 
       {/* Recent Platform Transactions Live Audit Table */}

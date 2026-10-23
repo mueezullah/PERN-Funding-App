@@ -12,7 +12,6 @@ import {
   TrendingUp,
   ShieldCheck,
   Heart,
-  MessageCircle,
 } from "lucide-react";
 
 interface SearchUser {
@@ -634,9 +633,6 @@ export function SearchBar({
                           <div className="flex items-center gap-3 mt-1 text-[11px] text-slate-400">
                             <span className="flex items-center gap-1">
                               <Heart className="w-3 h-3 text-rose-500" /> {post.likes_count || 0}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MessageCircle className="w-3 h-3 text-indigo-500" /> {post.comments_count || 0}
                             </span>
                           </div>
                         </div>

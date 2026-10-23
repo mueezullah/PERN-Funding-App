@@ -21,7 +21,7 @@ const StatMetricCard: React.FC<StatMetricCardProps> = ({
   icon: Icon,
   badgeText,
   badgeVariant = "success",
-  accentColorClass = "border-l-4 border-l-indigo-600",
+  accentColorClass = "",
   iconBgClass = "bg-indigo-50 text-indigo-600",
 }) => {
   return (

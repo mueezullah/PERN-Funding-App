@@ -40,6 +40,10 @@ const CreatorDonationsTab: React.FC<CreatorDonationsTabProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
+          <div className="px-3.5 py-1.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs font-bold flex items-center gap-1.5">
+            <Users className="h-4 w-4 text-indigo-600" />
+            <span>{totalDonationsCount} Contributions</span>
+          </div>
           <div className="px-3.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-1.5">
             <DollarSign className="h-4 w-4 text-emerald-600" />
             <span>${totalRaised.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Settled</span>

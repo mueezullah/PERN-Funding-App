@@ -5,7 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { handleSuccess, handleError } from "../../../utils";
 
-const AdminKycQueueTab = () => {
+interface AdminKycQueueTabProps {
+  onDecisionMade?: () => void;
+}
+
+const AdminKycQueueTab: React.FC<AdminKycQueueTabProps> = ({ onDecisionMade }) => {
   const [pendingList, setPendingList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
@@ -51,6 +55,7 @@ const AdminKycQueueTab = () => {
       if (res.ok && data.success) {
         handleSuccess(`KYC submission ${decision} successfully`);
         setPendingList((prev) => prev.filter((item) => item.id !== id));
+        onDecisionMade?.();
       } else {
         handleError(data.message || "Failed to process KYC decision");
       }

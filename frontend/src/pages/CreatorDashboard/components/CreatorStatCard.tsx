@@ -21,7 +21,7 @@ const CreatorStatCard: React.FC<CreatorStatCardProps> = ({
   icon: Icon,
   badgeText,
   badgeVariant = "success",
-  accentColorClass = "border-l-4 border-l-indigo-500",
+  accentColorClass = "",
   iconBgClass = "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400",
 }) => {
   return (

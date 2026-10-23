@@ -17,9 +17,10 @@ import {
   Layers,
   ArrowRight,
 } from "lucide-react";
-import { formatRelativeTime, handleError, handleSuccess } from "../../utils";
+import { formatRelativeTime, handleError } from "../../utils";
 import { toggleBookmark } from "../../features/bookmarks/bookmarksAPI";
 import { showMinimalToast } from "../../components/MinimalToast";
+import { toggleLike, fetchLikeStatus } from "../../features/likes/likesAPI";
 
 export default function ExplorePage({
   setIsAuthenticated,
@@ -28,7 +29,7 @@ export default function ExplorePage({
 }) {
   const navigate = useNavigate();
   const [items, setItems] = useState<any[]>([]);
-  const [page, setPage] = useState(1);
+  const [_page, setPage] = useState(1);
   const [pagination, setPagination] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -286,11 +287,27 @@ function ExploreCampaignCard({ item, navigate }: { item: any; navigate: any }) {
     }
   };
 
+  useEffect(() => {
+    if (!item?.id) return;
+    let cancelled = false;
+    fetchLikeStatus("campaign", Number(item.id))
+      .then((data) => {
+        if (!cancelled) {
+          setIsLiked(data.liked);
+          setLikesCount(data.likesCount);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [item?.id]);
+
   const handleLikeClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const token = localStorage.getItem("token");
     if (!token) {
-      handleError("Please sign in to like");
+      showMinimalToast("Please sign in to like");
       return;
     }
     const nextState = !isLiked;
@@ -298,22 +315,13 @@ function ExploreCampaignCard({ item, navigate }: { item: any; navigate: any }) {
     setLikesCount((prev: number) => (nextState ? prev + 1 : Math.max(0, prev - 1)));
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_BASE_API_URL}/likes`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}`,
-        },
-        body: JSON.stringify({ targetType: "campaign", targetId: item.id }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        setIsLiked(!nextState);
-        setLikesCount((prev: number) => (!nextState ? prev + 1 : Math.max(0, prev - 1)));
-      }
-    } catch {
+      const data = await toggleLike("campaign", Number(item.id));
+      setIsLiked(data.liked);
+      setLikesCount(data.likesCount);
+    } catch (err: any) {
       setIsLiked(!nextState);
       setLikesCount((prev: number) => (!nextState ? prev + 1 : Math.max(0, prev - 1)));
+      showMinimalToast(err?.response?.data?.message || err?.message || "Failed to update like");
     }
   };
 
@@ -484,11 +492,27 @@ function ExplorePostCard({ item, navigate }: { item: any; navigate: any }) {
     }
   };
 
+  useEffect(() => {
+    if (!item?.id) return;
+    let cancelled = false;
+    fetchLikeStatus("post", Number(item.id))
+      .then((data) => {
+        if (!cancelled) {
+          setIsLiked(data.liked);
+          setLikesCount(data.likesCount);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [item?.id]);
+
   const handleLikeClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const token = localStorage.getItem("token");
     if (!token) {
-      handleError("Please sign in to like");
+      showMinimalToast("Please sign in to like");
       return;
     }
     const nextState = !isLiked;
@@ -496,22 +520,13 @@ function ExplorePostCard({ item, navigate }: { item: any; navigate: any }) {
     setLikesCount((prev: number) => (nextState ? prev + 1 : Math.max(0, prev - 1)));
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_BASE_API_URL}/likes`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}`,
-        },
-        body: JSON.stringify({ targetType: "post", targetId: item.id }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        setIsLiked(!nextState);
-        setLikesCount((prev: number) => (!nextState ? prev + 1 : Math.max(0, prev - 1)));
-      }
-    } catch {
+      const data = await toggleLike("post", Number(item.id));
+      setIsLiked(data.liked);
+      setLikesCount(data.likesCount);
+    } catch (err: any) {
       setIsLiked(!nextState);
       setLikesCount((prev: number) => (!nextState ? prev + 1 : Math.max(0, prev - 1)));
+      showMinimalToast(err?.response?.data?.message || err?.message || "Failed to update like");
     }
   };
 

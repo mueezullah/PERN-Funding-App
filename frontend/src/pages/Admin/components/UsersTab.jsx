@@ -12,7 +12,7 @@ const roleOptions = [
   { key: "admin", label: "Admins", badgeClass: "bg-purple-50 text-purple-700 border-purple-200" },
 ];
 
-const UsersTab = ({ users = [], loading = false, error = null, handleRoleChange }) => {
+const UsersTab = ({ users = [], loading = false, _error = null, handleRoleChange }) => {
   const [selectedRole, setSelectedRole] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [kycFilter, setKycFilter] = useState("all");

@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { X, Camera, User, Loader2, AtSign, Check, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { showMinimalToast } from "./MinimalToast";
-import { handleError } from "../utils";
 
 interface UpdateProfileModalProps {
   isOpen: boolean;

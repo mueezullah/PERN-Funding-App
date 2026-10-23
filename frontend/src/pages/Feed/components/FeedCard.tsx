@@ -70,7 +70,7 @@ export function FeedCard({
   const [isSaved, setIsSaved] = useState(false);
   const navigate = useNavigate();
 
-  const numericId = parseInt(id.replace(/\D/g, ""), 10) || 0;
+  const numericId = typeof id === "number" ? id : parseInt(String(id || "").replace(/\D/g, ""), 10) || 0;
   const targetType = type === "thread" ? "post" : type;
   const { liked, likesCount, loading, toggleLike } = useLike(targetType, numericId);
   const displayLikes = loading ? (stats.likes ?? likesCount) : likesCount;

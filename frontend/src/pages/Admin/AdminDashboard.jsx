@@ -222,7 +222,7 @@ const AdminDashboard = ({ setIsAuthenticated }) => {
           )}
 
           {/* ===== 5. KYC VERIFICATION QUEUE ===== */}
-          {activeView === "kyc" && <AdminKycQueueTab />}
+          {activeView === "kyc" && <AdminKycQueueTab onDecisionMade={fetchUsers} />}
 
           {/* ===== 6. SETTINGS & PLATFORM CONFIG ===== */}
           {activeView === "settings" && (

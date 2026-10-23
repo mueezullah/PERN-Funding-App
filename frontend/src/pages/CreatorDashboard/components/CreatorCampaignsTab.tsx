@@ -30,7 +30,7 @@ interface CreatorCampaignsTabProps {
 
 const CreatorCampaignsTab: React.FC<CreatorCampaignsTabProps> = ({
   campaigns = [],
-  loading = false,
+  loading: _loading = false,
   onCreateClick,
   onEditClick,
   onDeleteClick,
